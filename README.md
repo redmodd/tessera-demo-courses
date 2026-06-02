@@ -1,6 +1,6 @@
 # Tessera Demo Courses
 
-An example [Tessera](https://tesseralearn.dev) **workspace** —
+An example [Tessera](https://tesseralearn.dev) **workspace**: 
 a reference project showing what courses built on the framework can look like. It
 holds demo courses under `courses/`.
 
@@ -17,20 +17,18 @@ exercise most of the framework, navigation modes, completion modes, export targe
 and quiz shells, custom question widgets, persistence, theming, and accessibility.
 More demos will be added over time.
 
-### `courses/road-sign-demo` — "Road Sign Match"
+### `courses/road-sign-demo`: "Road Sign Match"
 
-A fast, timed road-sign recognition **game**. It leans on Tessera's extension
-points heavily:
+A fast, timed road-sign recognition **game**. It leans on Tessera's extension points heavily:
 
 - Custom `layout.svelte` and `quiz.svelte` (replaces the default chrome and quiz UI)
 - Custom components — countdown ring, confetti, leaderboard, sound effects, sign cards
 - MUTCD road-sign SVGs and a sound-effect library under `assets/`
 - **Quiz-mode completion** (`completion.mode: "quiz"`), free navigation
 
-### `courses/solar-system-demo` — "Solar System Explorer"
+### `courses/solar-system-demo`: "Solar System Explorer"
 
-A rich, content-driven tour of the planets, closer to a polished interactive
-article:
+A rich, content-driven tour of the planets, closer to a polished interactive article:
 
 - A library of custom presentation components under `lib/` (chaptered histories,
   reveal-on-scroll, comparison diagrams, a starfield, modals, a cosmic challenge)
@@ -77,8 +75,8 @@ tessera-demo-courses/
 ├── package.json              # the one package — owns tessera-learn, svelte, scripts
 ├── shared/                   # design system shared across courses (imported as $shared)
 ├── courses/
-│   ├── road-sign-demo/       # cmi5 game — custom layout, quiz, components, sfx
-│   └── solar-system-demo/    # static-web content course — manual completion, custom lib/
+│   ├── road-sign-demo/       # custom layout, quiz, components, sfx
+│   └── solar-system-demo/    # manual completion, custom lib/
 ├── CLAUDE.md / AGENTS.md     # pointers to the framework's authoring guide
 └── README.md
 ```
