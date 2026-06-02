@@ -1,0 +1,22 @@
+{
+  "name": "tessera-demo-courses",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "new": "tessera new",
+    "dev": "tessera dev",
+    "export": "tessera export",
+    "validate": "tessera validate",
+    "a11y": "tessera a11y",
+    "check": "tessera check"
+  },
+  "dependencies": {
+    "tessera-learn": "0.2.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "playwright": "^1.60.0",
+    "svelte": "^5.56.0"
+  }
+}

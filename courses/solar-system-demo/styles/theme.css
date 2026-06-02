@@ -1,0 +1,62 @@
+:root {
+  --tessera-primary: #7aa2ff;
+  --tessera-primary-light: #a8c0ff;
+  --tessera-primary-dark: #4d6fc0;
+  --tessera-text: #e8edf7;
+  --tessera-text-light: #98a3b8;
+  --tessera-bg: #05060e;
+  --tessera-bg-secondary: #0c1024;
+  --tessera-border: #1f2440;
+  --tessera-success: #4ade80;
+  --tessera-error: #f87171;
+  --tessera-warning: #fbbf24;
+  --tessera-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --tessera-content-max-width: 1100px;
+
+  --planet-mercury: #b0a08a;
+  --planet-venus: #e8c181;
+  --planet-earth: #4f86c6;
+  --planet-mars: #c1573a;
+  --planet-jupiter: #c9a781;
+  --planet-saturn: #e3c98a;
+  --planet-uranus: #9ed6dc;
+  --planet-neptune: #4a6fc7;
+}
+
+html, body {
+  background: radial-gradient(ellipse at top, #0a1030 0%, #05060e 70%);
+  color: var(--tessera-text);
+  font-family: var(--tessera-font-family);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  background-attachment: fixed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--tessera-primary-light);
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(122, 162, 255, 0.4);
+  color: var(--tessera-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
