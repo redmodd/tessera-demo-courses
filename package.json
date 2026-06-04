@@ -12,7 +12,7 @@
     "check": "tessera check"
   },
   "dependencies": {
-    "tessera-learn": "0.2.1"
+    "tessera-learn": "0.2.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",

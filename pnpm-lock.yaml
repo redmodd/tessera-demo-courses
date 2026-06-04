@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       tessera-learn:
-        specifier: 0.2.1
-        version: 0.2.1(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0)
+        specifier: 0.2.2
+        version: 0.2.2(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0)
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.11.3
@@ -546,8 +546,8 @@ packages:
   teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
 
-  tessera-learn@0.2.1:
-    resolution: {integrity: sha512-kWWzTjVJBfMaWd8nP885Xg2L3exOjE+VvlstyGF1vTNJRPEhIGiOhqUrmn571DZRjgI2oTGaBZASbrT5eePgwQ==}
+  tessera-learn@0.2.2:
+    resolution: {integrity: sha512-kkDyysQAsXVdesof1SldfTik0yoAtU1yUaCNRmZe8LlAlYyKwxgeuWQN/p4eMnFDI8odPIPUlAzgL7eYAGVrjw==}
     engines: {node: '>=24'}
     hasBin: true
     peerDependencies:
@@ -1096,7 +1096,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tessera-learn@0.2.1(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0):
+  tessera-learn@0.2.2(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0):
     dependencies:
       '@sveltejs/acorn-typescript': 1.0.10(acorn@8.16.0)
       '@sveltejs/vite-plugin-svelte': 7.1.2(svelte@5.56.1)(vite@8.0.16)
