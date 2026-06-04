@@ -6,3 +6,4 @@ a11y-report.json
 .env
 .env.local
 .claude/settings.local.json
+docs/
