@@ -7,4 +7,4 @@ a11y-report.json
 .env.local
 .claude/settings.local.json
 docs/
-.superpowers
+.superpowers/
