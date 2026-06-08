@@ -987,6 +987,9 @@
   }
   .glyph { pointer-events: none; display: grid; place-items: center; }
   .glyph :global(svg) { width: 36px; height: 36px; }
+  /* Trees (hedge tiles) read as a fuller, leafier wall — drawn larger than the other
+     tile glyphs so a hedge row nearly fills its tiles. */
+  .cell.hedge .glyph :global(svg) { width: 54px; height: 54px; }
 
   .sprite {
     position: absolute;

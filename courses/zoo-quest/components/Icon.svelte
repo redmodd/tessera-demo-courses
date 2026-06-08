@@ -51,10 +51,16 @@
     <rect x="15" y="3" width="1.6" height="18" fill="#d9a441" />
     <path d="M10 8h3.5M10 11h3.5" stroke="#e8f0e8" stroke-width="1" stroke-linecap="round" />
   {:else if name === 'tree'}
-    <rect x="11" y="13" width="2" height="8" rx="0.6" fill="#7a5230" />
-    <circle cx="12" cy="9" r="6" fill="#4f7a3e" />
-    <circle cx="8" cy="11" r="4" fill="#5f8c49" />
-    <circle cx="16" cy="11" r="4" fill="#5f8c49" />
+    <rect x="10.7" y="16" width="2.6" height="6" rx="0.8" fill="#7a5230" />
+    <circle cx="12" cy="8" r="5" fill="#4f7a3e" />
+    <circle cx="7" cy="10" r="4.5" fill="#5f8c49" />
+    <circle cx="17" cy="10" r="4.5" fill="#5f8c49" />
+    <circle cx="5.5" cy="13.5" r="4" fill="#4f7a3e" />
+    <circle cx="18.5" cy="13.5" r="4" fill="#4f7a3e" />
+    <circle cx="9" cy="14" r="5" fill="#6fa055" />
+    <circle cx="15" cy="14" r="5" fill="#6fa055" />
+    <circle cx="12" cy="11.5" r="5.5" fill="#5f8c49" />
+    <circle cx="9.5" cy="7" r="3" fill="#6fa055" />
   {/if}
 </svg>
 
