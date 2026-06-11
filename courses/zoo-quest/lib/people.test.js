@@ -65,9 +65,9 @@ describe('pickSmug', () => {
 });
 
 describe('PEOPLE.centre', () => {
-  test('the clerk and shopkeeper are friendly patrons with their own dialog lines', () => {
+  test('the lone shopkeeper is a friendly, non-roaming patron with their own dialog lines', () => {
     const centre = PEOPLE.centre;
-    expect(centre).toHaveLength(2);
+    expect(centre).toHaveLength(1);
     for (const p of centre) {
       expect(p.kind).toBe('friendly');
       expect(p.roam).toBe(false);

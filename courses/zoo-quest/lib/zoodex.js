@@ -25,6 +25,23 @@ export const ANIMALS = {
       'Males grow a <strong>mane</strong> and <strong>roar</strong> to mark their territory.',
       'They rest up to <strong>20 hours a day</strong> to save energy for the hunt.',
     ],
+    // Walk-up exhibit copy (Discovery Center). Deliberately covers the themes the keeper
+    // quiz tests, so a player who reads it can answer the keeper and earn the card.
+    exhibit: {
+      intro:
+        'Lions are the only big cats that live in family groups. Read up before you meet the keeper!',
+      facts: [
+        'A lion family is called a <strong>pride</strong>, and they share their food and territory.',
+        'Lions belong to the <strong>cat family</strong> and are <strong>carnivores</strong> — they eat meat from other animals.',
+        'The <strong>females hunt as a team</strong>, stalking low and quiet so they can take prey bigger than one lion.',
+        'A male grows a shaggy <strong>mane</strong>; besides looking grand, it helps protect his neck in fights.',
+        'A lion’s <strong>roar</strong> can be heard about <strong>8 kilometres</strong> away — it marks territory and helps the pride find each other.',
+        'A baby lion is a <strong>cub</strong>; cubs drink their mother’s milk and learn to hunt by watching and play-fighting.',
+        'Most wild lions live on the <strong>African grasslands (savanna)</strong>, where their <strong>sandy coat</strong> blends into the dry grass.',
+        'Lions rest <strong>up to 20 hours a day</strong> and are most active in the cooler hours of <strong>dawn and dusk</strong>.',
+        'A big male can weigh about as much as <strong>two adult people</strong>, and can sprint as fast as a galloping horse in short bursts.',
+      ],
+    },
     // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
       { question: 'What is a lion family group called?', options: ['A pack', 'A pride', 'A herd', 'A troop'], correct: 1 },
@@ -74,6 +91,23 @@ export const ANIMALS = {
       'Big <strong>ears flap like fans</strong> to cool down.',
       'Herds follow the oldest female, the <strong>matriarch</strong>, who remembers where water is.',
     ],
+    // Walk-up exhibit copy (Discovery Center). Deliberately covers the themes the keeper
+    // quiz tests, so a player who reads it can answer the keeper and earn the card.
+    exhibit: {
+      intro:
+        'The African elephant is the biggest animal that walks the Earth. Read up before you meet the keeper!',
+      facts: [
+        'The African elephant is the <strong>largest land animal</strong> on Earth — an adult can weigh as much as <strong>several cars</strong>.',
+        'Its <strong>trunk</strong> has <strong>tens of thousands of muscles</strong>: it breathes, smells, drinks, trumpets, greets family, and is gentle enough to pick up a single blade of grass.',
+        'Elephants are <strong>herbivores</strong>, eating plants like grass, leaves, and bark.',
+        'A herd is mostly <strong>females and their young</strong>, led by the oldest female — the <strong>matriarch</strong> — who remembers where water is, even in a drought.',
+        'A baby elephant is a <strong>calf</strong>; the mother is pregnant for almost <strong>two years</strong>, and the whole herd helps protect the young.',
+        'Big <strong>ears flap like fans</strong> to release heat and cool the elephant down.',
+        'The long white <strong>tusks</strong> are really very long <strong>teeth</strong>, used to dig for water and strip bark.',
+        'A loud <strong>trumpet</strong> call carries across long distances, and elephants rely on <strong>smell and hearing</strong> to find food and family.',
+        'They drink <strong>many buckets of water a day</strong> and coat themselves in <strong>mud and dust</strong> to block the sun and biting bugs.',
+      ],
+    },
     // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
       { question: 'What does an elephant use its trunk for?', options: ['Only drinking', 'Breathing, smelling, drinking and grabbing food', 'Only trumpeting', 'Only hearing'], correct: 1 },

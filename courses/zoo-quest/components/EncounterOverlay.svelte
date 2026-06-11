@@ -10,7 +10,7 @@
   // leaves the animal findable again. `onResolve` fires once on close to return focus.
   import { onMount } from 'svelte';
   import { usePersistence } from 'tessera-learn';
-  import { collect } from '../lib/zoodex.js';
+  import { collect, readStore } from '../lib/zoodex.js';
   import ZoodexCard from './ZoodexCard.svelte';
   import Animal from './Animal.svelte';
   import Icon from './Icon.svelte';
@@ -18,6 +18,10 @@
   let { encounter, onResolve } = $props();
 
   const store = usePersistence('zoodex');
+  // Whether this animal is already in the Zoodex when the encounter opens. Grass
+  // encounters repeat, so on a re-find we celebrate the sighting instead of falsely
+  // announcing a new card. Captured once, before collect() runs on reveal.
+  const alreadyHad = readStore(store).collected.includes(encounter.id);
 
   let dlg;
   let primaryBtn = $state(null); // the current Continue button, or null in 'choose'
@@ -63,7 +67,11 @@
 >
   {#if phase === 'card'}
     <p class="emoji celebrate" aria-hidden="true"><Icon name="party" /></p>
-    <h2 id="enc-title">{encounter.name} added to your Zoodex!</h2>
+    <h2 id="enc-title">
+      {alreadyHad
+        ? `You spotted the ${encounter.name} again!`
+        : `${encounter.name} added to your Zoodex!`}
+    </h2>
     <ZoodexCard animal={encounter} />
     <button class="continue" bind:this={primaryBtn} onclick={() => dlg.close()}>
       Continue →

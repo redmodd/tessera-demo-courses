@@ -131,30 +131,16 @@ export const PEOPLE = {
 
   centre: [
     {
-      id: 'iris',
-      kind: 'friendly',
-      name: 'Iris',
-      home: { r: 4, c: 3 },
-      roam: false,
-      look: { skin: '#e0b48c', hair: '#3a2a1a', hairStyle: 'bun', shirt: '#2f6f4f', trousers: '#3a3a44' },
-      lines: [
-        'Welcome to the Visitor Centre! Need a map or lost something?',
-        'Restrooms are just past the gift shop, on your left.',
-        'First time here? The savanna trail is a lovely place to start.',
-        'Lost and found is right here at the desk — just ask!',
-      ],
-    },
-    {
       id: 'gus',
       kind: 'friendly',
       name: 'Gus',
-      home: { r: 4, c: 12 },
+      home: { r: 7, c: 9 },
       roam: false,
       look: { skin: '#8a5a3c', hair: '#15110d', hairStyle: 'short', shirt: '#9a4b3f', trousers: '#46506b', hat: 'cap' },
       lines: [
         'Welcome to the gift shop! Plush lions are our best sellers.',
         'Every postcard helps support the animals — take two!',
-        'We’ve got keychains, mugs, and little stuffed elephants.',
+        'We’ve got keychains, mugs, tees, and little stuffed elephants.',
         'A souvenir to remember your visit? Right this way.',
       ],
     },

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor } from './worldmap.js';
+import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, exhibitAt, pickEncounter } from './worldmap.js';
 import { bfs } from './engine.js';
 import { ANIMALS } from './zoodex.js';
 
@@ -7,13 +7,12 @@ import { ANIMALS } from './zoodex.js';
 // wall, an entry that drops you in the void, a keeper sealed behind scenery, a pen
 // that leaks onto the path) that a string grid makes easy to introduce.
 describe('WORLD data invariants', () => {
-  test('all overworld maps share one explorable size', () => {
-    const sizes = new Set(
-      Object.entries(WORLD.maps)
-        .filter(([id]) => !WORLD.interiors.includes(id))
-        .map(([, m]) => `${m.rows}x${m.cols}`),
-    );
-    expect(sizes.size).toBe(1);
+  test('every overworld map is at least the base explorable size', () => {
+    for (const [id, m] of Object.entries(WORLD.maps)) {
+      if (WORLD.interiors.includes(id)) continue;
+      expect(m.rows, `${id} rows`).toBeGreaterThanOrEqual(20);
+      expect(m.cols, `${id} cols`).toBeGreaterThanOrEqual(32);
+    }
   });
 
   test('start tile is walkable', () => {
@@ -144,18 +143,70 @@ describe('WORLD data invariants', () => {
     });
     expect(resolveLink(WORLD, 'plaza', { r: 10, c: 31 })).toEqual({
       to: 'savanna',
-      entry: { r: 10, c: 1 },
+      entry: { r: 13, c: 1 },
     });
-    expect(keeperAt(WORLD, 'savanna', { r: 8, c: 7 })).toBe('lion');
-    expect(keeperAt(WORLD, 'savanna', { r: 8, c: 23 })).toBe('elephant');
+    expect(keeperAt(WORLD, 'savanna', { r: 19, c: 29 })).toBe('lion');
+    expect(keeperAt(WORLD, 'savanna', { r: 8, c: 26 })).toBe('elephant');
   });
 
-  test('you can walk plaza → centre and back through the visitor-centre doors', () => {
+  test('the savanna Discovery Center door links to its interior and back', () => {
+    expect(resolveLink(WORLD, 'savanna', { r: 6, c: 8 })).toEqual({
+      to: 'discovery',
+      entry: { r: 9, c: 8 },
+    });
+    expect(resolveLink(WORLD, 'discovery', { r: 11, c: 8 })).toEqual({
+      to: 'savanna',
+      entry: { r: 7, c: 8 },
+    });
+  });
+
+  test('every exhibit panel is a blocked display tile that resolves, bumps, and is reachable', () => {
+    for (const [mapId, panels] of Object.entries(WORLD.exhibits ?? {})) {
+      const { grid } = WORLD.maps[mapId];
+      const from = arrivalTile(mapId);
+      for (const panel of panels) {
+        const { r0, r1, c0, c1 } = panel.bounds;
+        for (let r = r0; r <= r1; r++) {
+          for (let c = c0; c <= c1; c++) {
+            expect(isDisplay(grid, r, c), `display ${mapId} (${r},${c})`).toBe(true);
+            expect(walkable(grid, r, c)).toBe(false);
+            expect(exhibitAt(WORLD, mapId, { r, c })).toBe(panel.animal);
+          }
+        }
+        // bump-able from a reachable neighbour
+        const beside = [];
+        for (let r = r0; r <= r1; r++) {
+          for (let c = c0; c <= c1; c++) {
+            for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+              const t = { r: r + dr, c: c + dc };
+              if (walkable(grid, t.r, t.c)) beside.push(t);
+            }
+          }
+        }
+        expect(
+          beside.some((t) => bfs(grid, from, t)),
+          `exhibit ${panel.animal} not approachable from ${JSON.stringify(from)}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  test('every exhibit animal exists and carries exhibit content', () => {
+    for (const panels of Object.values(WORLD.exhibits ?? {})) {
+      for (const p of panels) {
+        const animal = ANIMALS[p.animal];
+        expect(animal, `animal ${p.animal}`).toBeDefined();
+        expect(Array.isArray(animal.exhibit?.facts) && animal.exhibit.facts.length > 0).toBe(true);
+      }
+    }
+  });
+
+  test('you can walk plaza → centre and back through the gift-shop doors', () => {
     expect(resolveLink(WORLD, 'plaza', { r: 4, c: 15 })).toEqual({
       to: 'centre',
-      entry: { r: 8, c: 8 },
+      entry: { r: 9, c: 8 },
     });
-    expect(resolveLink(WORLD, 'centre', { r: 9, c: 8 })).toEqual({
+    expect(resolveLink(WORLD, 'centre', { r: 11, c: 8 })).toEqual({
       to: 'plaza',
       entry: { r: 5, c: 15 },
     });
@@ -179,19 +230,24 @@ describe('WORLD data invariants', () => {
   });
 });
 
-describe('encounterFor', () => {
-  test('returns the map encounter when unmet', async () => {
-    const { encounterFor } = await import('./worldmap.js');
-    expect(encounterFor(WORLD, 'savanna', [])).toBe('squirrel');
+describe('pickEncounter', () => {
+  test('returns a map encounter so it can be found in the grass', () => {
+    expect(pickEncounter(WORLD, 'savanna', () => 0)).toBe('squirrel');
   });
 
-  test('returns null once the encounter is met', async () => {
-    const { encounterFor } = await import('./worldmap.js');
-    expect(encounterFor(WORLD, 'savanna', ['squirrel'])).toBeNull();
+  test('stays findable however many times — grass encounters repeat', () => {
+    // pickEncounter never consults collection state; the same animal can reappear.
+    expect(pickEncounter(WORLD, 'savanna', () => 0)).toBe('squirrel');
   });
 
-  test('returns null for a map with no encounter', async () => {
-    const { encounterFor } = await import('./worldmap.js');
-    expect(encounterFor(WORLD, 'plaza', [])).toBeNull();
+  test('returns null for a map with no encounters', () => {
+    expect(pickEncounter(WORLD, 'plaza')).toBeNull();
+  });
+
+  test('chooses among a map’s encounter pool by the rng', () => {
+    const world = { encounters: { meadow: ['squirrel', 'rabbit', 'fox'] } };
+    expect(pickEncounter(world, 'meadow', () => 0)).toBe('squirrel'); // index 0
+    expect(pickEncounter(world, 'meadow', () => 0.5)).toBe('rabbit'); // index 1
+    expect(pickEncounter(world, 'meadow', () => 0.99)).toBe('fox'); // index 2
   });
 });

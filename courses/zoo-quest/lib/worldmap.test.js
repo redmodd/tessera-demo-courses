@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { walkable, resolveLink, keeperAt, keeperRecordAt, isStaffDoor, WORLD } from './worldmap.js';
+import { walkable, resolveLink, keeperAt, keeperRecordAt, isStaffDoor, isDisplay, exhibitAt, WORLD } from './worldmap.js';
 import { bfs } from './engine.js';
 
 // grid: '.' path, '#' wall, '~' water, 'F' fence, 'p' pen, 'K' keeper, '>' connector
@@ -84,20 +84,50 @@ describe('keeperAt / keeperRecordAt', () => {
 
 describe('savanna walkway to keepers', () => {
   const savanna = WORLD.maps.savanna.grid;
+  const entry = { r: 13, c: 1 }; // where you arrive from the plaza
 
   test('the dirt path (+) tile is walkable', () => {
     expect(walkable([['+']], 0, 0)).toBe(true);
   });
 
-  test('the walkway tiles in front of both keepers are path tiles', () => {
-    expect(savanna[10][1]).toBe('+'); // entrance stub
-    expect(savanna[9][7]).toBe('+'); // in front of the lion keeper
-    expect(savanna[9][23]).toBe('+'); // in front of the elephant keeper
+  test('a walkable tile sits beside each keeper, reachable from the entry', () => {
+    for (const keeper of [{ r: 8, c: 26 }, { r: 19, c: 29 }]) {
+      const beside = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+        .map(([dr, dc]) => ({ r: keeper.r + dr, c: keeper.c + dc }))
+        .filter((t) => walkable(savanna, t.r, t.c));
+      expect(beside.length).toBeGreaterThan(0);
+      expect(beside.some((t) => bfs(savanna, entry, t))).toBe(true);
+    }
+  });
+});
+
+describe('isDisplay / exhibitAt', () => {
+  // grid: '.' floor, 'W' wall, 'X' exhibit display panel
+  const grid = [
+    ['W', 'W', 'W', 'W', 'W'],
+    ['W', 'X', 'X', '.', 'W'],
+    ['W', '.', '.', '.', 'W'],
+  ];
+  const room = {
+    maps: { gallery: { grid } },
+    exhibits: {
+      gallery: [{ animal: 'lion', bounds: { r0: 1, r1: 1, c0: 1, c1: 2 } }],
+    },
+  };
+
+  test('isDisplay is true only on an X tile', () => {
+    expect(isDisplay(grid, 1, 1)).toBe(true);
+    expect(isDisplay(grid, 1, 3)).toBe(false);
+    expect(isDisplay(grid, 0, 0)).toBe(false);
+    expect(isDisplay(grid, 9, 9)).toBe(false);
   });
 
-  test('the walkway connects the entrance to each keeper approach tile', () => {
-    expect(bfs(savanna, { r: 10, c: 1 }, { r: 9, c: 7 })).toBeTruthy();
-    expect(bfs(savanna, { r: 10, c: 1 }, { r: 9, c: 23 })).toBeTruthy();
+  test('exhibitAt returns the animal whose bounds contain the tile, else null', () => {
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 1 })).toBe('lion');
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 2 })).toBe('lion');
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 3 })).toBeNull();
+    expect(exhibitAt(room, 'gallery', { r: 2, c: 1 })).toBeNull();
+    expect(exhibitAt(room, 'nowhere', { r: 1, c: 1 })).toBeNull();
   });
 });
 

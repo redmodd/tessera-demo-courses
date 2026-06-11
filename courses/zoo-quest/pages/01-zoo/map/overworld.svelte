@@ -10,8 +10,12 @@
     walkable,
     resolveLink,
     keeperAt,
-    encounterFor,
+    pickEncounter,
     isStaffDoor,
+    isSign,
+    signAt,
+    isDisplay,
+    exhibitAt,
   } from '../../../lib/worldmap.js';
   import { bfs, camOffset } from '../../../lib/engine.js';
   import { penTiles, wanderStep, roamTiles } from '../../../lib/npc.js';
@@ -26,8 +30,11 @@
   import KeeperOverlay from '../../../components/KeeperOverlay.svelte';
   import PatronOverlay from '../../../components/PatronOverlay.svelte';
   import EmployeesOnlyOverlay from '../../../components/EmployeesOnlyOverlay.svelte';
+  import SignOverlay from '../../../components/SignOverlay.svelte';
+  import ExhibitOverlay from '../../../components/ExhibitOverlay.svelte';
   import RivalOverlay from '../../../components/RivalOverlay.svelte';
   import GrassTuft from '../../../components/GrassTuft.svelte';
+  import InteriorDecor from '../../../components/InteriorDecor.svelte';
   import Icon from '../../../components/Icon.svelte';
   import { hasTuft } from '../../../lib/decor.js';
 
@@ -35,7 +42,7 @@
   const STEP_MS = 220;
   const FADE_MS = 120;
   const CRITTER_TICK_MS = 250; // how often we check which animals are due to step
-  const ENCOUNTER_RATE = 0.5; // chance a grass step rolls its un-met encounter
+  const ENCOUNTER_RATE = 0.02; // chance a single grass step triggers an encounter
   const PATRON_TICK_MS = 250; // poll: how often we check which patrons are due to step
   const PATRON_WANDER_MS = 1300; // a strolling patron takes a step about this often
   const PATRON_GLIDE_MS = 550; // glide per step — kept < wander so each step settles
@@ -45,7 +52,8 @@
     entrance: 'Zoo Entrance',
     plaza: 'Central Plaza',
     savanna: 'Savanna',
-    centre: 'Visitor Centre',
+    centre: 'Gift Shop',
+    discovery: 'Discovery Center',
   };
 
   // Arrow keys / WASD → [rowDelta, colDelta].
@@ -71,6 +79,11 @@
     E: { cls: 'staff-door', icon: 'door' },
     c: { cls: 'desk', glyph: '' },
     s: { cls: 'shelf', glyph: '' },
+    h: { cls: 'rack', glyph: '' },
+    t: { cls: 'table', glyph: '' },
+    o: { cls: 'void', glyph: '' },
+    I: { cls: 'sign', icon: 'sign' },
+    X: { cls: 'display', glyph: '' }, // exhibit board (interior); poster drawn by InteriorDecor
   };
 
   const nav = useNavigation();
@@ -118,6 +131,8 @@
   let patronRoamSets = {}; // patron id → Set("r,c") roam area (roamers only)
   let talking = $state(null); // the patron whose overlay is open
   let employeesOnly = $state(false); // the staff-only modal is open
+  let signInfo = $state(null); // the sign record while a lawn-sign modal is open
+  let exhibit = $state(null); // ANIMALS entry while an exhibit-kiosk modal is open
   let rivals = $state(readRivals(rivalStore)); // faced rivals → past outcome
   let patronLoop = null;
   let held = [];
@@ -137,7 +152,7 @@
   const map = $derived(WORLD.maps[mapId]);
   const keepersOnMap = $derived(WORLD.enclosures[mapId] ?? []);
   const walking = $derived(heldActive || moving);
-  const busy = $derived(moving || crossing || !!encounter || !!keeper || !!talking || employeesOnly);
+  const busy = $derived(moving || crossing || !!encounter || !!keeper || !!talking || employeesOnly || !!signInfo || !!exhibit);
 
   const reduceMotion =
     typeof window !== 'undefined' &&
@@ -221,21 +236,51 @@
   // renders above the facade when stepping into it. `doorX/doorY` are the door's px offset
   // within the facade.
   const buildingsOnMap = $derived(
-    (WORLD.buildings?.[mapId] ?? []).map(({ label, bounds, door }) => ({
-      label,
-      x: bounds.c0 * TILE,
-      y: bounds.r0 * TILE,
-      w: (bounds.c1 - bounds.c0 + 1) * TILE,
-      h: (bounds.r1 - bounds.r0 + 1) * TILE,
-      doorX: (door.c - bounds.c0) * TILE,
-      doorY: (door.r - bounds.r0) * TILE,
-    })),
+    (WORLD.buildings?.[mapId] ?? []).map(({ label, style = 'shop', bounds, door }) => {
+      const w = (bounds.c1 - bounds.c0 + 1) * TILE;
+      const h = (bounds.r1 - bounds.r0 + 1) * TILE;
+      const doorX = (door.c - bounds.c0) * TILE;
+      const doorY = (door.r - bounds.r0) * TILE;
+      // Two 6-pane (2×3) windows, vertically centred in the wall, each centred between the
+      // door and its corner so the gap to the door matches the gap to the wall edge. The
+      // wall interior runs ~8px in from each side; the door occupies one tile at doorX.
+      const winW = 32;
+      const winH = 46;
+      const winY = 44 + (h - 44) / 2 - winH / 2;
+      const winXs = [
+        Math.round((8 + doorX) / 2 - winW / 2),
+        Math.round((doorX + TILE + (w - 8)) / 2 - winW / 2),
+      ];
+      // Horizontal plank seams down the whole wall (ranger facade), from just under the
+      // roofline to near the base — so the planking reads over the full wall, not just the top.
+      const plankYs = [];
+      for (let py = 60; py < h - 8; py += 16) plankYs.push(py);
+      return { label, style, x: bounds.c0 * TILE, y: bounds.r0 * TILE, w, h, doorX, doorY, winW, winH, winY, winXs, plankYs };
+    }),
   );
 
-  // Evenly spaced left edges for `n` windows of width `ww` across a facade `w` px wide.
-  function windowXs(w, n = 3, ww = 56) {
-    const gap = (w - n * ww) / (n + 1);
-    return Array.from({ length: n }, (_, i) => Math.round(gap + i * (ww + gap)));
+  // For interior rooms, paint each wall tile's thin band on whichever side(s) face the
+  // outside — off the grid edge or onto empty void ('o'), so the band hugs the room's
+  // outer boundary even where a doorway opening lets the exit sit beyond the wall. Only
+  // wall ('W') tiles get a band; corners get two. Returns a CSS class for the .area-centre
+  // wall rules, empty otherwise.
+  function wallEdge(r, c) {
+    if (map.grid[r]?.[c] !== 'W') return '';
+    const outside = (rr, cc) => {
+      const ch = map.grid[rr]?.[cc];
+      return ch === undefined || ch === 'o';
+    };
+    const top = outside(r - 1, c), bot = outside(r + 1, c);
+    const left = outside(r, c - 1), right = outside(r, c + 1);
+    if (top && left) return 'we-tl';
+    if (top && right) return 'we-tr';
+    if (bot && left) return 'we-bl';
+    if (bot && right) return 'we-br';
+    if (top) return 'we-top';
+    if (bot) return 'we-bottom';
+    if (left) return 'we-left';
+    if (right) return 'we-right';
+    return '';
   }
 
   // Persist position. Spread the *latest* persisted state so a move never clobbers a
@@ -348,10 +393,11 @@
       crossTo(link);
       return true;
     }
-    if (map.grid[r][c] === 'g') {
-      // Skip animals already collected; an un-finished (fled) encounter stays findable.
-      const id = encounterFor(WORLD, mapId, readStore(store).collected);
-      if (id && Math.random() < ENCOUNTER_RATE) {
+    if (map.grid[r][c] === 'g' && Math.random() < ENCOUNTER_RATE) {
+      // 30% of grass steps trigger; then pick which animal appears from the map's pool.
+      // Encounters repeat — you can meet the same animal again even after collecting it.
+      const id = pickEncounter(WORLD, mapId);
+      if (id) {
         stopLoop();
         encounter = ENCOUNTERS[id];
         return true;
@@ -423,6 +469,18 @@
     if (isStaffDoor(map.grid, nr, nc)) {
       stopLoop();
       employeesOnly = true;
+      return;
+    }
+    // Bumping the lawn sign opens its info modal (its tile is blocked).
+    if (isSign(map.grid, nr, nc)) {
+      stopLoop();
+      signInfo = signAt(WORLD, mapId, { r: nr, c: nc });
+      return;
+    }
+    // Bumping an exhibit board opens its kiosk modal (its tile is blocked).
+    if (isDisplay(map.grid, nr, nc)) {
+      stopLoop();
+      exhibit = ANIMALS[exhibitAt(WORLD, mapId, { r: nr, c: nc })];
       return;
     }
     if (!walkable(map.grid, nr, nc)) return;
@@ -568,17 +626,100 @@
     tick().then(() => stageEl?.focus());
   }
 
+  // Click the lawn sign → walk to the nearest reachable tile beside it, then pop its
+  // info modal. Mirrors interactWithStaffDoor's approach loop.
+  async function interactWithSign(r, c) {
+    if (busy) return;
+    const record = signAt(WORLD, mapId, { r, c });
+    let best = null;
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      const t = { r: r + dr, c: c + dc };
+      if (!walkable(map.grid, t.r, t.c)) continue;
+      const path = bfs(map.grid, pos, t);
+      if (path && (!best || path.length < best.path.length)) best = { path };
+    }
+    if (!best) {
+      signInfo = record; // nowhere to stand beside it; just show the message
+      return;
+    }
+    const seq = ++walkSeq;
+    moving = true;
+    for (const step of best.path) {
+      if (seq !== walkSeq) return; // arrow key interrupted the approach
+      facing = faceFor(step.r - pos.r, step.c - pos.c);
+      pos = { r: step.r, c: step.c };
+      if (!reduceMotion) await delay(STEP_MS);
+    }
+    if (seq !== walkSeq) return; // cancelled before arriving — don't open the modal
+    moving = false;
+    facing = faceFor(r - pos.r, c - pos.c); // turn toward the sign
+    signInfo = record;
+  }
+
+  function resolveSign() {
+    signInfo = null;
+    tick().then(() => stageEl?.focus());
+  }
+
+  // Click an exhibit board → walk to the nearest reachable tile beside it, then open the
+  // walk-up kiosk modal for that animal. Mirrors interactWithSign's approach loop.
+  async function interactWithExhibit(r, c) {
+    if (busy) return;
+    const animal = ANIMALS[exhibitAt(WORLD, mapId, { r, c })];
+    if (!animal) return;
+    let best = null;
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      const t = { r: r + dr, c: c + dc };
+      if (!walkable(map.grid, t.r, t.c)) continue;
+      const path = bfs(map.grid, pos, t);
+      if (path && (!best || path.length < best.path.length)) best = { path };
+    }
+    if (!best) {
+      exhibit = animal; // nowhere to stand beside it; just open the kiosk
+      return;
+    }
+    const seq = ++walkSeq;
+    moving = true;
+    for (const step of best.path) {
+      if (seq !== walkSeq) return; // arrow key interrupted the approach
+      facing = faceFor(step.r - pos.r, step.c - pos.c);
+      pos = { r: step.r, c: step.c };
+      if (!reduceMotion) await delay(STEP_MS);
+    }
+    if (seq !== walkSeq) return; // cancelled before arriving — don't open the kiosk
+    moving = false;
+    facing = faceFor(r - pos.r, c - pos.c); // turn toward the board
+    exhibit = animal;
+  }
+
+  function resolveExhibit() {
+    exhibit = null;
+    tick().then(() => stageEl?.focus());
+  }
+
   // Tile clicks: keepers route to the approach-and-talk flow; everything else walks.
   function onCellClick(r, c) {
+    // Ignore map clicks mid-transition or while an overlay owns input.
+    if (crossing || encounter || keeper || talking || employeesOnly || signInfo || exhibit) return;
+    // A fresh click overrides an in-progress walk/approach: invalidate the running loop
+    // and drop `moving` so the new target is honoured from the current tile (mirrors how
+    // an arrow key interrupts the walk). Without this, the new click hits `busy` and is
+    // dropped, so the avatar finishes the old path first.
+    if (moving) {
+      walkSeq++;
+      moving = false;
+    }
     const patron = patronAt(r, c);
     if (patron) interactWithPatron(patron);
     else if (keeperAt(WORLD, mapId, { r, c })) interactWithKeeper(r, c);
     else if (isStaffDoor(map.grid, r, c)) interactWithStaffDoor(r, c);
+    else if (isSign(map.grid, r, c)) interactWithSign(r, c);
+    else if (isDisplay(map.grid, r, c)) interactWithExhibit(r, c);
     else walkTo(r, c);
   }
 
   function onKeyDown(e) {
-    if (encounter || keeper || talking || employeesOnly) return; // the open overlay owns the keyboard
+    if (encounter || keeper || talking || employeesOnly || signInfo || exhibit) return; // the open overlay owns the keyboard
     const k = e.key.toLowerCase();
     if (!(k in KEYDIR)) return;
     e.preventDefault();
@@ -644,7 +785,7 @@
         {@const t = TILES[code] ?? TILES['.']}
         {@const shore = t.cls === 'water' ? shoreFillByTile.get(`${r},${c}`) : null}
         <button
-          class="cell {t.cls}"
+          class="cell {t.cls}{WORLD.interiors.includes(mapId) ? ' ' + wallEdge(r, c) : ''}"
           style="left:{c * TILE}px; top:{r * TILE}px; width:{TILE}px; height:{TILE}px;
             background-position:{-c * TILE}px {-r * TILE}px;{shore ? ` --water-shore:${shore};` : ''}"
           onclick={() => onCellClick(r, c)}
@@ -734,25 +875,55 @@
     {#each buildingsOnMap as b (b.label)}
       <div class="building" style="left:{b.x}px; top:{b.y}px; width:{b.w}px; height:{b.h}px;" aria-hidden="true">
         <svg class="facade" viewBox="0 0 {b.w} {b.h}" width={b.w} height={b.h}>
-          <!-- wall -->
-          <rect x="6" y="44" width={b.w - 12} height={b.h - 44} fill="#dcc6a2" stroke="#8a6a44" stroke-width="3" />
-          <!-- roof: overhang + ridge highlight -->
-          <polygon points="0,50 {b.w},50 {b.w - 24},8 24,8" fill="#7a4d30" stroke="#543824" stroke-width="3" stroke-linejoin="round" />
-          <rect x="26" y="11" width={b.w - 52} height="5" rx="2" fill="rgba(255,255,255,0.18)" />
-          <!-- windows: a single row of two, flanking the door below -->
-          {#each windowXs(b.w, 2) as wx}
-            <rect x={wx} y="82" width="56" height="48" rx="4" fill="#bfe0ea" stroke="#6f4630" stroke-width="4" />
-            <line x1={wx + 28} y1="82" x2={wx + 28} y2="130" stroke="#6f4630" stroke-width="3" />
-            <line x1={wx} y1="106" x2={wx + 56} y2="106" stroke="#6f4630" stroke-width="3" />
-          {/each}
-          <!-- door: a framed doorway reaching the building's base -->
-          <rect x={b.doorX + 5} y={b.doorY - 8} width={TILE - 10} height={TILE + 8} rx="5" fill="#5a3a22" />
-          <rect x={b.doorX + 11} y={b.doorY - 2} width={TILE - 22} height={TILE + 2} rx="3" fill="#a06a3a" />
-          <circle cx={b.doorX + TILE - 17} cy={b.doorY + TILE / 2} r="3.2" fill="#f5d65b" />
+          {#if b.style === 'ranger'}
+            <!-- Ranger Discovery Center: pale plank wall + forest-green gable roof — reads
+                 clearly apart from the plaza Gift Shop (stucco + brown shingles). -->
+            <!-- wall: pale planks, seamed down the full height -->
+            <rect x="6" y="44" width={b.w - 12} height={b.h - 44} fill="#e8dcc0" stroke="#7a6a4a" stroke-width="3" />
+            {#each b.plankYs as py}
+              <line x1="8" y1={py} x2={b.w - 8} y2={py} stroke="#cdbd99" stroke-width="1.5" />
+            {/each}
+            <!-- roof: forest-green gable + light ridge -->
+            <polygon points="0,50 {b.w},50 {b.w - 24},8 24,8" fill="#2f6b3f" stroke="#1d4528" stroke-width="3" stroke-linejoin="round" />
+            <rect x="26" y="11" width={b.w - 52} height="5" rx="2" fill="rgba(255,255,255,0.22)" />
+            <!-- windows: two 6-pane panes -->
+            {#each b.winXs as wx}
+              <rect x={wx} y={b.winY} width={b.winW} height={b.winH} rx="3" fill="#bfe0ea" stroke="#5a4a30" stroke-width="3" />
+              <line x1={wx + b.winW / 2} y1={b.winY} x2={wx + b.winW / 2} y2={b.winY + b.winH} stroke="#5a4a30" stroke-width="2" />
+              <line x1={wx} y1={b.winY + b.winH / 3} x2={wx + b.winW} y2={b.winY + b.winH / 3} stroke="#5a4a30" stroke-width="2" />
+              <line x1={wx} y1={b.winY + (b.winH * 2) / 3} x2={wx + b.winW} y2={b.winY + (b.winH * 2) / 3} stroke="#5a4a30" stroke-width="2" />
+            {/each}
+            <!-- door: a framed doorway reaching the building's base -->
+            <rect x={b.doorX + 5} y={b.doorY - 8} width={TILE - 10} height={TILE + 8} rx="5" fill="#4a3a26" />
+            <rect x={b.doorX + 11} y={b.doorY - 2} width={TILE - 22} height={TILE + 2} rx="3" fill="#8a7048" />
+            <circle cx={b.doorX + TILE - 17} cy={b.doorY + TILE / 2} r="3.2" fill="#f5d65b" />
+          {:else}
+            <!-- Gift Shop (default): stucco wall + brown shingled roof. -->
+            <!-- wall -->
+            <rect x="6" y="44" width={b.w - 12} height={b.h - 44} fill="#dcc6a2" stroke="#8a6a44" stroke-width="3" />
+            <!-- roof: overhang + ridge highlight -->
+            <polygon points="0,50 {b.w},50 {b.w - 24},8 24,8" fill="#7a4d30" stroke="#543824" stroke-width="3" stroke-linejoin="round" />
+            <rect x="26" y="11" width={b.w - 52} height="5" rx="2" fill="rgba(255,255,255,0.18)" />
+            <!-- windows: two 6-pane (2×3) panes, centred between the door and each corner.
+                 Geometry (winXs/winY) is computed per building in buildingsOnMap. -->
+            {#each b.winXs as wx}
+              <rect x={wx} y={b.winY} width={b.winW} height={b.winH} rx="3" fill="#bfe0ea" stroke="#6f4630" stroke-width="3" />
+              <line x1={wx + b.winW / 2} y1={b.winY} x2={wx + b.winW / 2} y2={b.winY + b.winH} stroke="#6f4630" stroke-width="2" />
+              <line x1={wx} y1={b.winY + b.winH / 3} x2={wx + b.winW} y2={b.winY + b.winH / 3} stroke="#6f4630" stroke-width="2" />
+              <line x1={wx} y1={b.winY + (b.winH * 2) / 3} x2={wx + b.winW} y2={b.winY + (b.winH * 2) / 3} stroke="#6f4630" stroke-width="2" />
+            {/each}
+            <!-- door: a framed doorway reaching the building's base -->
+            <rect x={b.doorX + 5} y={b.doorY - 8} width={TILE - 10} height={TILE + 8} rx="5" fill="#5a3a22" />
+            <rect x={b.doorX + 11} y={b.doorY - 2} width={TILE - 22} height={TILE + 2} rx="3" fill="#a06a3a" />
+            <circle cx={b.doorX + TILE - 17} cy={b.doorY + TILE / 2} r="3.2" fill="#f5d65b" />
+          {/if}
         </svg>
-        <span class="building-sign">{b.label}</span>
       </div>
     {/each}
+
+    {#if WORLD.interiors.includes(mapId)}
+      <InteriorDecor tile={TILE} {mapId} />
+    {/if}
 
     {#each keepersOnMap as e (e.animal)}
       <button class="sprite keeper-sprite"
@@ -826,6 +997,14 @@
 
 {#if employeesOnly}
   <EmployeesOnlyOverlay onResolve={resolveEmployeesOnly} />
+{/if}
+
+{#if signInfo}
+  <SignOverlay title={signInfo.title} body={signInfo.body} onResolve={resolveSign} />
+{/if}
+
+{#if exhibit}
+  <ExhibitOverlay animal={exhibit} onResolve={resolveExhibit} />
 {/if}
 
 <style>
@@ -928,57 +1107,133 @@
     inset: 0;
     display: block;
   }
-  /* Storefront sign, mounted on the wall just below the roof. */
-  .building-sign {
-    position: absolute;
-    left: 50%;
-    top: 56px;
-    transform: translateX(-50%);
-    padding: 2px 10px;
-    background: var(--zoo-dialog);
-    border: 2px solid var(--zoo-bark);
-    border-radius: 7px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    white-space: nowrap;
-    color: var(--zoo-ink);
-  }
   .cell.keeper { background: var(--ground-earth); }
-  .cell.building { background: var(--building-wall); cursor: not-allowed; }
-  .cell.door { background: var(--ground-earth); }
+  /* Exterior building/door footprint cells match the surrounding lawn, so the SVG facade
+     (with its angled roof corners) reads as a house sitting on the ground rather than on a
+     tan square. The interior (.area-centre) overrides these with wood/threshold colours. */
+  .cell.building { background: var(--ground-field); cursor: not-allowed; }
+  .cell.door { background: var(--ground-field); }
   .cell.staff-door { background: var(--building-wall); cursor: pointer; } /* clickable: pops the staff-only modal */
   .cell.desk { background: var(--desk-fill); cursor: not-allowed; }
   .cell.shelf { background: var(--shelf-fill); cursor: not-allowed; }
+  /* Lawn sign: sits on the plaza ground and is clickable (walk over + read). */
+  .cell.sign { background: var(--ground-field); cursor: pointer; }
+  /* Exhibit board: clickable; only appears interior, where .area-discovery + the
+     InteriorDecor poster give it its framed-panel look. */
+  .cell.display { background: var(--ground-field); cursor: pointer; }
+  /* Void: empty space outside a room's walls — shows the backdrop through, not clickable. */
+  .cell.void { background: transparent; box-shadow: none; cursor: default; }
 
   /* ===== interior polish (Warm Wood) ===== */
   /* Dim warm void outside the room walls, so the interior reads as "inside" rather
      than an outdoor patch floating on grass. */
   .stage.interior { background: #2e2620; }
-  /* Wood-panelled walls that clearly bound the room. */
-  .board.area-centre .cell.building,
+  .board.area-centre { --centre-wall: #6f4630; }
+
+  /* Wood-plank floor — also the base under the thin walls and doors, so the floor reads
+     continuously and each wall is just a band on the outer edge of its border tile.
+     28px plank period divides the 56px tile, so plank lines stay continuous across tiles. */
+  .board.area-centre .cell.ground,
+  .board.area-centre .cell.building {
+    background:
+      repeating-linear-gradient(0deg, #d8b079 0 26px, #c49a62 26px 28px),
+      #d8b079;
+    background-size: auto;
+    box-shadow: none;
+  }
+
+  /* Thin walls: a band of wall colour on the outer edge(s) of each border tile, painted
+     over the floor with inset shadows (two combined for corners). */
+  .board.area-centre .we-top { box-shadow: inset 0 14px 0 var(--centre-wall); }
+  .board.area-centre .we-bottom { box-shadow: inset 0 -14px 0 var(--centre-wall); }
+  .board.area-centre .we-left { box-shadow: inset 14px 0 0 var(--centre-wall); }
+  .board.area-centre .we-right { box-shadow: inset -14px 0 0 var(--centre-wall); }
+  .board.area-centre .we-tl { box-shadow: inset 0 14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
+  .board.area-centre .we-tr { box-shadow: inset 0 14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
+  .board.area-centre .we-bl { box-shadow: inset 0 -14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
+  .board.area-centre .we-br { box-shadow: inset 0 -14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
+
+  /* Interior doors read as plain doorway squares — same as the overworld map connectors —
+     rather than a drawn door: hide the default door glyph and frame the opening. */
+  .board.area-centre .cell.door,
   .board.area-centre .cell.staff-door {
-    background: #6f4630;
-    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.18);
+    background: var(--ground-earth);
+    box-shadow: inset 0 0 0 2px rgba(194, 118, 47, 0.6);
   }
-  /* Floor: a faint tile grid over the warm floor tone. */
-  .board.area-centre .cell.ground {
-    background: var(--ground-field);
-    box-shadow: inset 0 0 0 1px rgba(120, 90, 50, 0.1);
-  }
-  .board.area-centre .cell.door { background: #b08a55; }
-  /* Service desk: a wood counter with a lit top edge. */
+  .board.area-centre .cell.door .glyph,
+  .board.area-centre .cell.staff-door .glyph { display: none; }
+
+  /* Reception & checkout counters: a light countertop strip over a darker front panel. */
   .board.area-centre .cell.desk {
-    background: linear-gradient(#b5824a, #8a5e30);
-    box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+    background:
+      linear-gradient(#caa063, #b07f3f) top / 100% 12px no-repeat,
+      linear-gradient(#8a5e30, #6f4a26);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
   }
-  /* Gift-shop shelves: shelving rows dotted with colourful merchandise. */
+
+  /* Gift-shop shelves: wooden shelving boards stocked with colourful merchandise. */
   .board.area-centre .cell.shelf {
     background:
-      radial-gradient(7px 7px at 28% 26%, #d05b4a, transparent 62%),
-      radial-gradient(7px 7px at 70% 40%, #4a78d0, transparent 62%),
-      radial-gradient(7px 7px at 40% 74%, #e0a93f, transparent 62%),
-      repeating-linear-gradient(0deg, #7a5a38 0 12px, #654b30 12px 14px);
+      radial-gradient(7px 7px at 20% 24%, #d05b4a, transparent 60%),
+      radial-gradient(7px 7px at 50% 22%, #4a78d0, transparent 60%),
+      radial-gradient(7px 7px at 80% 26%, #e0a93f, transparent 60%),
+      radial-gradient(7px 7px at 22% 70%, #5aa86a, transparent 60%),
+      radial-gradient(7px 7px at 52% 72%, #c060a0, transparent 60%),
+      radial-gradient(7px 7px at 82% 68%, #d8c84a, transparent 60%),
+      repeating-linear-gradient(0deg, #8a6440 0 26px, #6f4f31 26px 28px);
+    background-size: auto;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+  }
+
+  /* Clothing racks stand on the floor; the rail + hanging garments are drawn by
+     InteriorDecor over this floor-coloured (blocked) tile. */
+  .board.area-centre .cell.rack {
+    background:
+      repeating-linear-gradient(0deg, #d8b079 0 26px, #c49a62 26px 28px),
+      #d8b079;
+    background-size: auto;
+  }
+
+  /* Display tables: a wood tabletop piled with colourful merchandise. */
+  .board.area-centre .cell.table {
+    background:
+      radial-gradient(8px 8px at 30% 38%, #d05b4a, transparent 60%),
+      radial-gradient(8px 8px at 64% 32%, #4a78d0, transparent 60%),
+      radial-gradient(8px 8px at 46% 66%, #e0a93f, transparent 60%),
+      radial-gradient(7px 7px at 78% 60%, #5aa86a, transparent 60%),
+      linear-gradient(#c39a5e, #a87c3c);
+    background-size: auto;
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  }
+  /* Discovery Center shares the warm-wood interior look (floor, walls, doors) with the
+     gift shop. The same plank floor and wall bands; the exhibit boards become framed
+     panels that InteriorDecor's posters sit over. */
+  .board.area-discovery { --centre-wall: #6f4630; }
+  .board.area-discovery .cell.ground,
+  .board.area-discovery .cell.building,
+  .board.area-discovery .cell.display {
+    background:
+      repeating-linear-gradient(0deg, #d8b079 0 26px, #c49a62 26px 28px),
+      #d8b079;
+    background-size: auto;
+    box-shadow: none;
+  }
+  .board.area-discovery .we-top { box-shadow: inset 0 14px 0 var(--centre-wall); }
+  .board.area-discovery .we-bottom { box-shadow: inset 0 -14px 0 var(--centre-wall); }
+  .board.area-discovery .we-left { box-shadow: inset 14px 0 0 var(--centre-wall); }
+  .board.area-discovery .we-right { box-shadow: inset -14px 0 0 var(--centre-wall); }
+  .board.area-discovery .we-tl { box-shadow: inset 0 14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
+  .board.area-discovery .we-tr { box-shadow: inset 0 14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
+  .board.area-discovery .we-bl { box-shadow: inset 0 -14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
+  .board.area-discovery .we-br { box-shadow: inset 0 -14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
+  .board.area-discovery .cell.door {
+    background: var(--ground-earth);
+    box-shadow: inset 0 0 0 2px rgba(194, 118, 47, 0.6);
+  }
+  .board.area-discovery .cell.door .glyph { display: none; }
+  /* The exhibit boards read as framed panels set against the back wall. */
+  .board.area-discovery .cell.display {
+    box-shadow: inset 0 0 0 2px rgba(90, 58, 34, 0.55);
   }
   /* ===== end interior polish ===== */
   .cell.connector {

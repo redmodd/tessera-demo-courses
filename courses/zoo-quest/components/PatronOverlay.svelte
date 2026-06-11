@@ -10,7 +10,7 @@
 
   let { patron, onResolve } = $props();
 
-  // A patron may carry its own dialog pool (e.g. the visitor-centre clerk and
+  // A patron may carry its own dialog pool (e.g. the gift-shop shopkeeper and
   // shopkeeper). Fall back to the shared savanna chatter when it doesn't.
   const line = patron.lines
     ? patron.lines[Math.floor(Math.random() * patron.lines.length)]

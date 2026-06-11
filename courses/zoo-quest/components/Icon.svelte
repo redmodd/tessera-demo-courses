@@ -61,6 +61,10 @@
     <circle cx="15" cy="14" r="5" fill="#6fa055" />
     <circle cx="12" cy="11.5" r="5.5" fill="#5f8c49" />
     <circle cx="9.5" cy="7" r="3" fill="#6fa055" />
+  {:else if name === 'sign'}
+    <rect x="11" y="11" width="2" height="11" rx="0.6" fill="#7a5230" />
+    <rect x="4" y="3" width="16" height="9" rx="1.6" fill="#dcc6a2" stroke="#8a6a44" stroke-width="1.2" />
+    <path d="M7 6.2h10M7 8.8h7" stroke="#6f4630" stroke-width="1.2" stroke-linecap="round" />
   {/if}
 </svg>
 
