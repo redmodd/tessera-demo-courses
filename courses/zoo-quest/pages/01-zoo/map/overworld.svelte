@@ -132,7 +132,7 @@
   let talking = $state(null); // the patron whose overlay is open
   let employeesOnly = $state(false); // the staff-only modal is open
   let signInfo = $state(null); // the sign record while a lawn-sign modal is open
-  let exhibit = $state(null); // ANIMALS entry while an exhibit-kiosk modal is open
+  let exhibit = $state(null); // { animal, display } while a display-panel modal is open
   let rivals = $state(readRivals(rivalStore)); // faced rivals → past outcome
   let patronLoop = null;
   let held = [];
@@ -259,13 +259,14 @@
     }),
   );
 
-  // For interior rooms, paint each wall tile's thin band on whichever side(s) face the
-  // outside — off the grid edge or onto empty void ('o'), so the band hugs the room's
-  // outer boundary even where a doorway opening lets the exit sit beyond the wall. Only
-  // wall ('W') tiles get a band; corners get two. Returns a CSS class for the .area-centre
-  // wall rules, empty otherwise.
+  // For interior rooms, paint a thin wall band on the outermost *floor* tiles — the ones
+  // whose side(s) face the outside (off the grid edge or onto empty void 'o'). The wall is
+  // a line on the floor's edge, not a separate blocked tile, so the player can walk right
+  // up to it; a doorway (D/E sitting beyond the wall) breaks the band where the floor
+  // borders it. Only floor ('.') tiles get a band; corners get two. Returns a CSS class for
+  // the .area-centre/.area-discovery wall rules, empty otherwise.
   function wallEdge(r, c) {
-    if (map.grid[r]?.[c] !== 'W') return '';
+    if (map.grid[r]?.[c] !== '.') return '';
     const outside = (rr, cc) => {
       const ch = map.grid[rr]?.[cc];
       return ch === undefined || ch === 'o';
@@ -477,10 +478,10 @@
       signInfo = signAt(WORLD, mapId, { r: nr, c: nc });
       return;
     }
-    // Bumping an exhibit board opens its kiosk modal (its tile is blocked).
+    // Bumping a display panel opens its kiosk modal (its tile is blocked).
     if (isDisplay(map.grid, nr, nc)) {
       stopLoop();
-      exhibit = ANIMALS[exhibitAt(WORLD, mapId, { r: nr, c: nc })];
+      exhibit = exhibitContentAt(nr, nc);
       return;
     }
     if (!walkable(map.grid, nr, nc)) return;
@@ -661,12 +662,22 @@
     tick().then(() => stageEl?.focus());
   }
 
-  // Click an exhibit board → walk to the nearest reachable tile beside it, then open the
-  // walk-up kiosk modal for that animal. Mirrors interactWithSign's approach loop.
+  // The { animal, display } content behind the display station at (r, c), or null. The
+  // station carries the animal + key; the content lives on ANIMALS[animal].exhibit.displays.
+  function exhibitContentAt(r, c) {
+    const station = exhibitAt(WORLD, mapId, { r, c });
+    if (!station) return null;
+    const animal = ANIMALS[station.animal];
+    const display = animal?.exhibit?.displays?.[station.key];
+    return display ? { animal, display } : null;
+  }
+
+  // Click a display panel → walk to the nearest reachable tile beside it, then open its
+  // walk-up modal. Mirrors interactWithSign's approach loop.
   async function interactWithExhibit(r, c) {
     if (busy) return;
-    const animal = ANIMALS[exhibitAt(WORLD, mapId, { r, c })];
-    if (!animal) return;
+    const content = exhibitContentAt(r, c);
+    if (!content) return;
     let best = null;
     for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
       const t = { r: r + dr, c: c + dc };
@@ -675,7 +686,7 @@
       if (path && (!best || path.length < best.path.length)) best = { path };
     }
     if (!best) {
-      exhibit = animal; // nowhere to stand beside it; just open the kiosk
+      exhibit = content; // nowhere to stand beside it; just open the kiosk
       return;
     }
     const seq = ++walkSeq;
@@ -688,8 +699,8 @@
     }
     if (seq !== walkSeq) return; // cancelled before arriving — don't open the kiosk
     moving = false;
-    facing = faceFor(r - pos.r, c - pos.c); // turn toward the board
-    exhibit = animal;
+    facing = faceFor(r - pos.r, c - pos.c); // turn toward the panel
+    exhibit = content;
   }
 
   function resolveExhibit() {
@@ -950,7 +961,7 @@
           transform: translate3d({p.c * TILE}px, {p.r * TILE}px, 0);"
         onclick={() => interactWithPatron(p)}
         aria-label={`Talk to ${p.name}`}>
-        <Patron {...p.look} />
+        {#if p.sprite === 'keeper'}<Keeper {...p.look} />{:else}<Patron {...p.look} />{/if}
       </button>
     {/each}
 
@@ -1004,7 +1015,7 @@
 {/if}
 
 {#if exhibit}
-  <ExhibitOverlay animal={exhibit} onResolve={resolveExhibit} />
+  <ExhibitOverlay animal={exhibit.animal} display={exhibit.display} onResolve={resolveExhibit} />
 {/if}
 
 <style>
@@ -1231,10 +1242,8 @@
     box-shadow: inset 0 0 0 2px rgba(194, 118, 47, 0.6);
   }
   .board.area-discovery .cell.door .glyph { display: none; }
-  /* The exhibit boards read as framed panels set against the back wall. */
-  .board.area-discovery .cell.display {
-    box-shadow: inset 0 0 0 2px rgba(90, 58, 34, 0.55);
-  }
+  /* Display tiles read as plain plank floor; each panel's own art (framed board, glass
+     case, kiosk, standee) is drawn over the tile by InteriorDecor, so no generic frame. */
   /* ===== end interior polish ===== */
   .cell.connector {
     background: var(--ground-earth);

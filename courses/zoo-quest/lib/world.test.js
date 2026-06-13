@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, exhibitAt, pickEncounter } from './worldmap.js';
+import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, exhibitAt, exhibitFootprint, pickEncounter } from './worldmap.js';
 import { bfs } from './engine.js';
 import { ANIMALS } from './zoodex.js';
 
@@ -160,43 +160,59 @@ describe('WORLD data invariants', () => {
     });
   });
 
-  test('every exhibit panel is a blocked display tile that resolves, bumps, and is reachable', () => {
-    for (const [mapId, panels] of Object.entries(WORLD.exhibits ?? {})) {
+  const DISPLAY_TYPES = new Set(['poster', 'diet', 'size', 'touchscreen', 'specimen', 'map']);
+
+  test('every display station is a blocked display footprint that resolves, bumps, and is reachable', () => {
+    for (const [mapId, stations] of Object.entries(WORLD.exhibits ?? {})) {
       const { grid } = WORLD.maps[mapId];
       const from = arrivalTile(mapId);
-      for (const panel of panels) {
-        const { r0, r1, c0, c1 } = panel.bounds;
-        for (let r = r0; r <= r1; r++) {
-          for (let c = c0; c <= c1; c++) {
-            expect(isDisplay(grid, r, c), `display ${mapId} (${r},${c})`).toBe(true);
-            expect(walkable(grid, r, c)).toBe(false);
-            expect(exhibitAt(WORLD, mapId, { r, c })).toBe(panel.animal);
-          }
-        }
-        // bump-able from a reachable neighbour
+      for (const station of stations) {
+        const tiles = exhibitFootprint(station);
+        expect(tiles.length, `station ${station.key} span`).toBeGreaterThan(0);
         const beside = [];
-        for (let r = r0; r <= r1; r++) {
-          for (let c = c0; c <= c1; c++) {
-            for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-              const t = { r: r + dr, c: c + dc };
-              if (walkable(grid, t.r, t.c)) beside.push(t);
-            }
+        for (const { r, c } of tiles) {
+          expect(isDisplay(grid, r, c), `display ${mapId} (${r},${c})`).toBe(true);
+          expect(walkable(grid, r, c)).toBe(false);
+          expect(exhibitAt(WORLD, mapId, { r, c })).toBe(station);
+          for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+            const t = { r: r + dr, c: c + dc };
+            if (walkable(grid, t.r, t.c)) beside.push(t);
           }
         }
         expect(
           beside.some((t) => bfs(grid, from, t)),
-          `exhibit ${panel.animal} not approachable from ${JSON.stringify(from)}`,
+          `station ${station.animal}/${station.key} not approachable from ${JSON.stringify(from)}`,
         ).toBe(true);
       }
     }
   });
 
-  test('every exhibit animal exists and carries exhibit content', () => {
-    for (const panels of Object.values(WORLD.exhibits ?? {})) {
-      for (const p of panels) {
-        const animal = ANIMALS[p.animal];
-        expect(animal, `animal ${p.animal}`).toBeDefined();
-        expect(Array.isArray(animal.exhibit?.facts) && animal.exhibit.facts.length > 0).toBe(true);
+  test('every display tile in an interior belongs to exactly one station', () => {
+    for (const id of WORLD.interiors) {
+      const { grid } = WORLD.maps[id];
+      grid.forEach((row, r) =>
+        row.forEach((ch, c) => {
+          if (ch !== TILE.DISPLAY) return;
+          const station = exhibitAt(WORLD, id, { r, c });
+          expect(station, `orphan display tile ${id} (${r},${c}) has no station`).not.toBeNull();
+        }),
+      );
+    }
+  });
+
+  test('every station resolves to a valid animal and a typed display with content', () => {
+    for (const stations of Object.values(WORLD.exhibits ?? {})) {
+      for (const s of stations) {
+        const animal = ANIMALS[s.animal];
+        expect(animal, `animal ${s.animal}`).toBeDefined();
+        const display = animal.exhibit?.displays?.[s.key];
+        expect(display, `display ${s.animal}/${s.key}`).toBeDefined();
+        expect(DISPLAY_TYPES.has(display.type), `type ${display.type}`).toBe(true);
+        expect(typeof display.title === 'string' && display.title.length > 0).toBe(true);
+        // Each display carries readable content: a fact list, or a touchscreen Q&A.
+        const hasFacts = Array.isArray(display.facts) && display.facts.length > 0;
+        const hasQA = typeof display.question === 'string' && typeof display.answer === 'string';
+        expect(hasFacts || hasQA, `display ${s.animal}/${s.key} has no content`).toBe(true);
       }
     }
   });
@@ -210,6 +226,45 @@ describe('WORLD data invariants', () => {
       to: 'plaza',
       entry: { r: 5, c: 15 },
     });
+  });
+
+  test('interior rooms have no blocked wall tiles — the slim wall is a line on the floor edge', () => {
+    // Interiors are enclosed by void ('o') / the board edge, and the wall reads as a thin
+    // band drawn on the outermost *floor* tile (see wallEdge in overworld.svelte). A
+    // blocked 'W' tile would render as plank floor with that band, so it looks walkable but
+    // isn't — the trap that left the player blocked one tile short of the visible wall.
+    for (const id of WORLD.interiors) {
+      const { grid } = WORLD.maps[id];
+      grid.forEach((row, r) =>
+        row.forEach((ch, c) => {
+          expect(ch, `${id} (${r},${c}) is a blocked wall tile that looks like floor`).not.toBe(
+            TILE.BUILDING,
+          );
+        }),
+      );
+    }
+  });
+
+  test('an interior floor tile beside the void boundary is walkable — you reach the wall line', () => {
+    // The former wall ring is now floor: the player can walk right up to the void edge.
+    for (const id of WORLD.interiors) {
+      const { grid } = WORLD.maps[id];
+      const edgeFloor = [];
+      grid.forEach((row, r) =>
+        row.forEach((ch, c) => {
+          if (ch !== TILE.PATH) return;
+          const bordersOutside = [[-1, 0], [1, 0], [0, -1], [0, 1]].some(([dr, dc]) => {
+            const n = grid[r + dr]?.[c + dc];
+            return n === undefined || n === TILE.VOID;
+          });
+          if (bordersOutside) edgeFloor.push({ r, c });
+        }),
+      );
+      expect(edgeFloor.length, `${id} has floor on its outer ring`).toBeGreaterThan(0);
+      for (const t of edgeFloor) {
+        expect(walkable(grid, t.r, t.c), `${id} edge floor ${JSON.stringify(t)}`).toBe(true);
+      }
+    }
   });
 
   test('the staff-only door is a blocked E tile with a walkable neighbour to bump from', () => {

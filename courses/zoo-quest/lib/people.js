@@ -145,6 +145,28 @@ export const PEOPLE = {
       ],
     },
   ],
+
+  // The Discovery Center greeter: a friendly keeper standing in the middle of the room who
+  // welcomes the player and points them at the exhibits. Stationary so they stay centred.
+  // `sprite: 'keeper'` draws them with the Keeper sprite (peaked cap + uniform) instead of
+  // the default Patron civilian look; the `look` fields are the Keeper component's props.
+  discovery: [
+    {
+      id: 'iris',
+      kind: 'friendly',
+      name: 'Keeper Iris',
+      home: { r: 6, c: 8 },
+      roam: false,
+      sprite: 'keeper',
+      look: { skin: '#e0b48c', hair: '#5a3a22', hairStyle: 'ponytail', shirt: '#3f6b4a', trousers: '#4f4030', cap: '#33523a' },
+      lines: [
+        'Welcome to the Savanna Discovery Center! Have a look around to learn all about our animals.',
+        'Welcome in! Every display here teaches you something about the savanna’s animals — explore them all.',
+        'Welcome, explorer! Wander the room and read the exhibits to discover the lions and elephants of the savanna.',
+        'Welcome! Take your time — each easel, case, and screen tells you more about the animals of the savanna.',
+      ],
+    },
+  ],
 };
 
 /**

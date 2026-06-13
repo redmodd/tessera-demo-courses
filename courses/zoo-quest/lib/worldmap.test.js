@@ -108,11 +108,10 @@ describe('isDisplay / exhibitAt', () => {
     ['W', 'X', 'X', '.', 'W'],
     ['W', '.', '.', '.', 'W'],
   ];
+  const station = { animal: 'lion', key: 'pride', at: { r: 1, c: 1 }, span: 2 };
   const room = {
     maps: { gallery: { grid } },
-    exhibits: {
-      gallery: [{ animal: 'lion', bounds: { r0: 1, r1: 1, c0: 1, c1: 2 } }],
-    },
+    exhibits: { gallery: [station] },
   };
 
   test('isDisplay is true only on an X tile', () => {
@@ -122,11 +121,11 @@ describe('isDisplay / exhibitAt', () => {
     expect(isDisplay(grid, 9, 9)).toBe(false);
   });
 
-  test('exhibitAt returns the animal whose bounds contain the tile, else null', () => {
-    expect(exhibitAt(room, 'gallery', { r: 1, c: 1 })).toBe('lion');
-    expect(exhibitAt(room, 'gallery', { r: 1, c: 2 })).toBe('lion');
-    expect(exhibitAt(room, 'gallery', { r: 1, c: 3 })).toBeNull();
-    expect(exhibitAt(room, 'gallery', { r: 2, c: 1 })).toBeNull();
+  test('exhibitAt returns the station whose footprint contains the tile, else null', () => {
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 1 })).toBe(station);
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 2 })).toBe(station); // within span
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 3 })).toBeNull(); // past span
+    expect(exhibitAt(room, 'gallery', { r: 2, c: 1 })).toBeNull(); // wrong row
     expect(exhibitAt(room, 'nowhere', { r: 1, c: 1 })).toBeNull();
   });
 });

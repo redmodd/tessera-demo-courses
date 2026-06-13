@@ -88,19 +88,26 @@ export function signAt(world, mapId, pos) {
   return list.find((s) => s.at.r === pos.r && s.at.c === pos.c) ?? null;
 }
 
+/** The tiles a display station covers: `span` cells along its row, starting at `at`. */
+export function exhibitFootprint(station) {
+  const tiles = [];
+  for (let i = 0; i < (station.span ?? 1); i++) tiles.push({ r: station.at.r, c: station.at.c + i });
+  return tiles;
+}
+
 /**
- * The animal id of the exhibit whose `bounds` contain `pos` on `mapId`, or null. An
- * exhibit panel can span several tiles (a wide board), so any tile inside the inclusive
- * bounds resolves to the same animal. Parallels keeperAt for walk-up kiosks.
+ * The display station whose footprint contains `pos` on `mapId`, or null. A station spans
+ * `span` tiles along its row (a wide board), so any tile under it resolves to the same
+ * station. Returns the station record ({ animal, key, at, span }) — the caller looks up its
+ * content via ANIMALS[animal].exhibit.displays[key]. Parallels keeperAt for walk-up kiosks.
  */
 export function exhibitAt(world, mapId, pos) {
   const list = world.exhibits?.[mapId] ?? [];
-  const hit = list.find(
-    (e) =>
-      pos.r >= e.bounds.r0 && pos.r <= e.bounds.r1 &&
-      pos.c >= e.bounds.c0 && pos.c <= e.bounds.c1,
+  return (
+    list.find(
+      (s) => pos.r === s.at.r && pos.c >= s.at.c && pos.c < s.at.c + (s.span ?? 1),
+    ) ?? null
   );
-  return hit ? hit.animal : null;
 }
 
 /**
@@ -214,51 +221,56 @@ const SAVANNA = parseMap(`
 ########################################
 `);
 
-// The Discovery Center interior — a single exhibit room that auto-centres in the
-// viewport. The south door (D) returns to the savanna. Two walk-up exhibit display
-// panels (X) — a lion board on the left, an elephant board on the right — sit against
-// the back wall; bumping or clicking one opens its readable exhibit modal. Both doors
-// sit just outside the walls, reached through an opening ringed by void ('o'). Walls/
-// floor/boards are styled by .area-discovery + InteriorDecor.
+// The Discovery Center interior — a gallery room that auto-centres in the viewport. The
+// south door (D) returns to the savanna. Twelve walk-up display panels (X) fill the room:
+// a lion gallery on the left, an elephant gallery on the right, each a mix of display
+// types (poster, diet, size, touchscreen, specimen case, range map). Every X tile belongs
+// to a station in WORLD.exhibits.discovery; bumping or clicking one opens that station's
+// focused modal. A clear lane down column 8 leads to the door. The whole room is walkable
+// floor ('.') enclosed by void ('o'); the slim wall is a band drawn on the floor's outer
+// edge (see wallEdge), so the player can walk right up to it. Floor/walls are styled by
+// .area-discovery; each panel's art is drawn by InteriorDecor from the station's type.
 const DISCOVERY = parseMap(`
 ooooooooooooooooo
-WWWWWWWWWWWWWWWWW
-W...............W
-W..XXX.....XXX..W
-W...............W
-W...............W
-W...............W
-W...............W
-W...............W
-W...............W
-WWWWWWWW.WWWWWWWW
+.................
+..X...X...X...X..
+.................
+.................
+..X...X...X...X..
+.................
+.................
+..X...X...X...X..
+.................
+.................
 ooooooooDoooooooo
 `);
 
 // The gift shop interior — a small room that auto-centres in the viewport. The south
-// door (D) returns to the plaza; the back-wall door (E) is the staff-only trap. Filled
-// with merchandise: wall shelves (s) split around the staff door, clothing racks (h),
-// a display table (t), and a checkout counter (c) the lone shopkeeper stands behind (see
-// PEOPLE.centre). Both doors sit just *outside* the walls, reached through an opening: the
-// staff-only door (E) above the top wall and the exit (D) below the bottom wall, each ringed
-// by empty void ('o'). Walls/doors/floor/fixtures are styled by .area-centre + InteriorDecor.
+// door (D) returns to the plaza; the north door (E) is the staff-only trap. Filled with
+// merchandise: wall shelves (s), clothing racks (h), a display table (t), and a checkout
+// counter (c) the lone shopkeeper stands behind (see PEOPLE.centre). The whole room is
+// walkable floor ('.') enclosed by void ('o'); the slim wall is a band drawn on the
+// floor's outer edge (see wallEdge), so the player can walk right up to it. Both doors sit
+// just past the floor in the void — the staff door (E) above, the exit (D) below — each
+// breaking the wall band where the floor meets it. Floor/doors/fixtures are styled by
+// .area-centre + InteriorDecor.
 const CENTRE = parseMap(`
 oooooooooEoooooooo
-WWWWWWWWW.WWWWWWWW
-W................W
-W.ssssss..ssssss.W
-W................W
-W..hhh.....ttt...W
-W................W
-W..hhh...........W
-W.......cccc.....W
-W................W
-WWWWWWWW.WWWWWWWWW
+..................
+..................
+..ssssss..ssssss..
+..................
+...hhh.....ttt....
+..................
+...hhh............
+........cccc......
+..................
+..................
 ooooooooDooooooooo
 `);
 
 export const WORLD = {
-  start: { map: 'entrance', r: 10, c: 3 },
+  start: { map: 'discovery', r: 9, c: 8 },
   maps: {
     entrance: ENTRANCE,
     plaza: PLAZA,
@@ -303,12 +315,27 @@ export const WORLD = {
       { label: 'Discovery Center', style: 'ranger', bounds: { r0: 4, r1: 6, c0: 6, c1: 10 }, door: { r: 6, c: 8 } },
     ],
   },
-  // Walk-up exhibit kiosks inside interior rooms. `bounds` is the inclusive footprint of
-  // 'X' display tiles; any tile inside it opens that animal's exhibit modal.
+  // Walk-up display stations inside interior rooms. Each station occupies `span` 'X' tiles
+  // along row `at.r` from column `at.c`; its `key` names the entry in
+  // ANIMALS[animal].exhibit.displays (which carries the display `type` + content). Lions
+  // fill the left of the Discovery Center, elephants the right; the mix of types gives the
+  // room variety. Footprints must line up with the 'X' tiles in the DISCOVERY map above.
   exhibits: {
     discovery: [
-      { animal: 'lion', bounds: { r0: 3, r1: 3, c0: 3, c1: 5 } },
-      { animal: 'elephant', bounds: { r0: 3, r1: 3, c0: 11, c1: 13 } },
+      // Lion gallery (left columns 2 & 6)
+      { animal: 'lion', key: 'pride', at: { r: 2, c: 2 } },
+      { animal: 'lion', key: 'diet', at: { r: 2, c: 6 } },
+      { animal: 'lion', key: 'range', at: { r: 5, c: 2 } },
+      { animal: 'lion', key: 'build', at: { r: 5, c: 6 } },
+      { animal: 'lion', key: 'roar', at: { r: 8, c: 2 } },
+      { animal: 'lion', key: 'size', at: { r: 8, c: 6 } },
+      // Elephant gallery (right columns 10 & 14)
+      { animal: 'elephant', key: 'herd', at: { r: 2, c: 10 } },
+      { animal: 'elephant', key: 'diet', at: { r: 2, c: 14 } },
+      { animal: 'elephant', key: 'range', at: { r: 5, c: 10 } },
+      { animal: 'elephant', key: 'tusks', at: { r: 5, c: 14 } },
+      { animal: 'elephant', key: 'ears', at: { r: 8, c: 10 } },
+      { animal: 'elephant', key: 'size', at: { r: 8, c: 14 } },
     ],
   },
   // Lawn/standing signs: bumping or clicking one opens an info modal with this title/body.

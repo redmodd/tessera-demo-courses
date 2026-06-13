@@ -75,3 +75,17 @@ describe('PEOPLE.centre', () => {
     }
   });
 });
+
+describe('PEOPLE.discovery', () => {
+  test('the greeter is a friendly, non-roaming docent with welcome lines', () => {
+    const discovery = PEOPLE.discovery;
+    expect(discovery).toHaveLength(1);
+    const iris = discovery[0];
+    expect(iris.kind).toBe('friendly');
+    expect(iris.roam).toBe(false);
+    expect(iris.sprite).toBe('keeper'); // drawn with the Keeper sprite, not a civilian patron
+    expect(Array.isArray(iris.lines) && iris.lines.length > 0).toBe(true);
+    // Every line welcomes the player so any random pick reads as a greeting.
+    for (const line of iris.lines) expect(line.toLowerCase()).toContain('welcome');
+  });
+});

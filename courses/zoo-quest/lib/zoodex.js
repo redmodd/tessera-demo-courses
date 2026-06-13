@@ -25,22 +25,70 @@ export const ANIMALS = {
       'Males grow a <strong>mane</strong> and <strong>roar</strong> to mark their territory.',
       'They rest up to <strong>20 hours a day</strong> to save energy for the hunt.',
     ],
-    // Walk-up exhibit copy (Discovery Center). Deliberately covers the themes the keeper
-    // quiz tests, so a player who reads it can answer the keeper and earn the card.
+    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
+    // of display showing different information. Between them they cover the themes the keeper
+    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
+    // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
     exhibit: {
-      intro:
-        'Lions are the only big cats that live in family groups. Read up before you meet the keeper!',
-      facts: [
-        'A lion family is called a <strong>pride</strong>, and they share their food and territory.',
-        'Lions belong to the <strong>cat family</strong> and are <strong>carnivores</strong> — they eat meat from other animals.',
-        'The <strong>females hunt as a team</strong>, stalking low and quiet so they can take prey bigger than one lion.',
-        'A male grows a shaggy <strong>mane</strong>; besides looking grand, it helps protect his neck in fights.',
-        'A lion’s <strong>roar</strong> can be heard about <strong>8 kilometres</strong> away — it marks territory and helps the pride find each other.',
-        'A baby lion is a <strong>cub</strong>; cubs drink their mother’s milk and learn to hunt by watching and play-fighting.',
-        'Most wild lions live on the <strong>African grasslands (savanna)</strong>, where their <strong>sandy coat</strong> blends into the dry grass.',
-        'Lions rest <strong>up to 20 hours a day</strong> and are most active in the cooler hours of <strong>dawn and dusk</strong>.',
-        'A big male can weigh about as much as <strong>two adult people</strong>, and can sprint as fast as a galloping horse in short bursts.',
-      ],
+      displays: {
+        pride: {
+          type: 'poster',
+          title: 'Life in the Pride',
+          intro: 'Lions are the only big cats that live in family groups.',
+          facts: [
+            'A lion family is called a <strong>pride</strong>, and they share their food and territory.',
+            'Prides greet one another by <strong>rubbing heads</strong> and licking.',
+            'A baby lion is a <strong>cub</strong>; the whole pride helps raise and feed the cubs.',
+          ],
+        },
+        diet: {
+          type: 'diet',
+          title: 'Hunters of the Grassland',
+          intro: 'Lions belong to the cat family and are <strong>carnivores</strong> — they eat meat.',
+          facts: [
+            'The <strong>females hunt as a team</strong>, stalking low and quiet to take prey bigger than one lion.',
+            'Sharp <strong>teeth</strong> grip and tear meat, and good night vision helps them hunt at dusk.',
+            'They are most active in the cooler hours of <strong>dawn and dusk</strong>.',
+          ],
+        },
+        size: {
+          type: 'size',
+          title: 'How Big Is a Lion?',
+          intro: 'Powerful cats built for short, explosive bursts of speed.',
+          facts: [
+            'A big male weighs about as much as <strong>two adult people</strong>.',
+            'In a sprint a lion runs about as fast as a <strong>galloping horse</strong> — but only briefly.',
+          ],
+        },
+        roar: {
+          type: 'touchscreen',
+          title: 'Did You Know?',
+          question: 'How far away can a lion’s roar be heard?',
+          answer:
+            'About <strong>8 kilometres</strong>! A roar marks territory and helps the pride find each other. Between hunts, a lion may rest <strong>up to 20 hours a day</strong>.',
+        },
+        build: {
+          type: 'specimen',
+          title: 'Built to Hunt',
+          specimen: 'Mane & claws',
+          intro: 'A closer look at a lion’s body.',
+          facts: [
+            'A male grows a shaggy <strong>mane</strong> — it looks grand and protects his neck in fights.',
+            'A <strong>sandy coat</strong> blends into dry grass for sneaking up on prey.',
+            'Strong paws and <strong>claws</strong>, plus meat-tearing teeth, make the lion a top hunter.',
+          ],
+        },
+        range: {
+          type: 'map',
+          title: 'Where Lions Live',
+          region: 'African savanna',
+          intro: 'Most wild lions live on the African grasslands.',
+          facts: [
+            'They roam the open <strong>savanna</strong>, where a sandy coat is perfect camouflage.',
+            'Grasslands give them space to hunt and tall grass to hide in.',
+          ],
+        },
+      },
     },
     // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
@@ -91,22 +139,68 @@ export const ANIMALS = {
       'Big <strong>ears flap like fans</strong> to cool down.',
       'Herds follow the oldest female, the <strong>matriarch</strong>, who remembers where water is.',
     ],
-    // Walk-up exhibit copy (Discovery Center). Deliberately covers the themes the keeper
-    // quiz tests, so a player who reads it can answer the keeper and earn the card.
+    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
+    // of display showing different information. Between them they cover the themes the keeper
+    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
+    // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
     exhibit: {
-      intro:
-        'The African elephant is the biggest animal that walks the Earth. Read up before you meet the keeper!',
-      facts: [
-        'The African elephant is the <strong>largest land animal</strong> on Earth — an adult can weigh as much as <strong>several cars</strong>.',
-        'Its <strong>trunk</strong> has <strong>tens of thousands of muscles</strong>: it breathes, smells, drinks, trumpets, greets family, and is gentle enough to pick up a single blade of grass.',
-        'Elephants are <strong>herbivores</strong>, eating plants like grass, leaves, and bark.',
-        'A herd is mostly <strong>females and their young</strong>, led by the oldest female — the <strong>matriarch</strong> — who remembers where water is, even in a drought.',
-        'A baby elephant is a <strong>calf</strong>; the mother is pregnant for almost <strong>two years</strong>, and the whole herd helps protect the young.',
-        'Big <strong>ears flap like fans</strong> to release heat and cool the elephant down.',
-        'The long white <strong>tusks</strong> are really very long <strong>teeth</strong>, used to dig for water and strip bark.',
-        'A loud <strong>trumpet</strong> call carries across long distances, and elephants rely on <strong>smell and hearing</strong> to find food and family.',
-        'They drink <strong>many buckets of water a day</strong> and coat themselves in <strong>mud and dust</strong> to block the sun and biting bugs.',
-      ],
+      displays: {
+        herd: {
+          type: 'poster',
+          title: 'The Herd',
+          intro: 'Elephants live in close family herds.',
+          facts: [
+            'A herd is mostly <strong>females and their young</strong>, led by the oldest female — the <strong>matriarch</strong>.',
+            'The matriarch <strong>remembers where water is</strong>, even in a drought.',
+            'A baby is a <strong>calf</strong>; the whole herd helps protect the young.',
+          ],
+        },
+        diet: {
+          type: 'diet',
+          title: 'A Plant-Powered Giant',
+          intro: 'Elephants are <strong>herbivores</strong> — they eat only plants.',
+          facts: [
+            'They munch <strong>grass, leaves, and bark</strong> for many hours a day.',
+            'They drink <strong>many buckets of water</strong> daily and coat themselves in <strong>mud and dust</strong> to block the sun and biting bugs.',
+          ],
+        },
+        size: {
+          type: 'size',
+          title: 'The Biggest on Land',
+          intro: 'The largest animal that walks the Earth.',
+          facts: [
+            'An adult can weigh as much as <strong>several cars</strong>.',
+            'It towers over a person — the biggest land animal alive today.',
+          ],
+        },
+        ears: {
+          type: 'touchscreen',
+          title: 'Did You Know?',
+          question: 'Why do elephants flap their big ears?',
+          answer:
+            'To <strong>cool down</strong> — the ears work like fans, releasing heat on a hot day.',
+        },
+        tusks: {
+          type: 'specimen',
+          title: 'Tusks & Trunk',
+          specimen: 'Tusk (a giant tooth)',
+          intro: 'Two amazing tools an elephant is born with.',
+          facts: [
+            'The long white <strong>tusks</strong> are really very long <strong>teeth</strong> — used to dig for water and strip bark.',
+            'The <strong>trunk</strong> has tens of thousands of muscles: it breathes, smells, drinks, trumpets, and can pick up a single blade of grass.',
+          ],
+        },
+        range: {
+          type: 'map',
+          title: 'Where Elephants Live',
+          region: 'African savanna',
+          intro: 'African elephants roam the grasslands and woodlands.',
+          facts: [
+            'They travel long distances across the <strong>savanna</strong> in search of food and water.',
+            'A loud <strong>trumpet</strong> call carries across the open plains to keep the herd together.',
+          ],
+        },
+      },
     },
     // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [

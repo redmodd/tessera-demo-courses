@@ -7,6 +7,7 @@
   import { onMount } from 'svelte';
   import { pickChatter } from '../lib/people.js';
   import Patron from './Patron.svelte';
+  import Keeper from './Keeper.svelte';
 
   let { patron, onResolve } = $props();
 
@@ -36,7 +37,9 @@
 </script>
 
 <dialog bind:this={dlg} class="patron zoo-modal" tabindex="-1" aria-labelledby="patron-title" onkeydown={onKeydown} onclose={() => onResolve()}>
-  <div class="who" aria-hidden="true"><Patron {...patron.look} /></div>
+  <div class="who" aria-hidden="true">
+    {#if patron.sprite === 'keeper'}<Keeper {...patron.look} />{:else}<Patron {...patron.look} />{/if}
+  </div>
   <h2 id="patron-title">{patron.name} says…</h2>
   <p class="line">{line}</p>
   <button class="continue" bind:this={primaryBtn} onclick={() => dlg.close()}>Continue →</button>
