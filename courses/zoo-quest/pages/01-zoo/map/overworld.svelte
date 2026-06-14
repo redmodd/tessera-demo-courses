@@ -37,6 +37,8 @@
   import InteriorDecor from '../../../components/InteriorDecor.svelte';
   import Icon from '../../../components/Icon.svelte';
   import { hasTuft } from '../../../lib/decor.js';
+  import SavannaDecor from '../../../components/SavannaDecor.svelte';
+  import PlazaDecor from '../../../components/PlazaDecor.svelte';
 
   const TILE = 56; // px per tile (sprites stay crisp; the window shows more of the map)
   const STEP_MS = 220;
@@ -84,6 +86,7 @@
     o: { cls: 'void', glyph: '' },
     I: { cls: 'sign', icon: 'sign' },
     X: { cls: 'display', glyph: '' }, // exhibit board (interior); poster drawn by InteriorDecor
+    B: { cls: 'prop', glyph: '' }, // silent scenery prop — drawn by SavannaDecor / InteriorDecor
   };
 
   const nav = useNavigation();
@@ -936,6 +939,14 @@
       <InteriorDecor tile={TILE} {mapId} />
     {/if}
 
+    {#if mapId === 'savanna'}
+      <SavannaDecor tile={TILE} />
+    {/if}
+
+    {#if mapId === 'plaza'}
+      <PlazaDecor tile={TILE} />
+    {/if}
+
     {#each keepersOnMap as e (e.animal)}
       <button class="sprite keeper-sprite"
         style="width:{TILE}px; height:{TILE}px;
@@ -1129,6 +1140,8 @@
   .cell.shelf { background: var(--shelf-fill); cursor: not-allowed; }
   /* Lawn sign: sits on the plaza ground and is clickable (walk over + read). */
   .cell.sign { background: var(--ground-field); cursor: pointer; }
+  /* Silent scenery prop (bench, bin, cart): blocked obstacle, no glyph, no interaction. */
+  .cell.prop { background: var(--ground-field); cursor: default; }
   /* Exhibit board: clickable; only appears interior, where .area-discovery + the
      InteriorDecor poster give it its framed-panel look. */
   .cell.display { background: var(--ground-field); cursor: pointer; }

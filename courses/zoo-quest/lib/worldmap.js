@@ -19,6 +19,7 @@ export const TILE = {
   SIGN: 'I', // a lawn sign — blocks the player; approaching it opens an info modal
   DISPLAY: 'X', // an exhibit display panel — blocks; approaching it opens the exhibit modal
   VOID: 'o', // empty space outside a room's walls — transparent, blocks the player
+  PROP: 'B', // silent scenery prop (bench, bin, cart …) — blocks, no glyph, no popup
 };
 
 // The keeper stands on their tile, so the player can't walk onto it — you approach an
@@ -27,7 +28,7 @@ export const TILE = {
 const BLOCKED = new Set([
   TILE.WALL, TILE.WATER, TILE.FENCE, TILE.PEN, TILE.KEEPER,
   TILE.BUILDING, TILE.STAFF_DOOR, TILE.DESK, TILE.SHELF, TILE.RACK, TILE.TABLE, TILE.SIGN,
-  TILE.DISPLAY, TILE.VOID,
+  TILE.DISPLAY, TILE.VOID, TILE.PROP,
 ]);
 
 /**
@@ -171,15 +172,15 @@ const PLAZA = parseMap(`
 #.....###....WWWWW.....###.....#
 #.....###....WWDWW.....###.....#
 #.....###....I.+.......###.....#
-#..............+...............#
-#..............+...............#
-#..........++++++++++..........#
-#..........++~~~~~~++..........#
+#......B+......+.......+B......#
+#.......+......+.......+.......#
+#.......+..++++++++++..+.......#
+#.......+..++~~~~~~++..+.......#
 >++++++++++++~~~~~~++++++++++++>
-#..........++~~~~~~++..........#
-#..........++~~~~~~++..........#
-#..........++++++++++..........#
-#..............................#
+#.......+..++~~~~~~++..+.......#
+#.......+..++~~~~~~++..+.......#
+#.......+..++++++++++..+.......#
+#......B+..............+B......#
 #.....###..............###.....#
 #.....###..............###.....#
 #.....###..............###.....#
@@ -209,14 +210,14 @@ const SAVANNA = parseMap(`
 >+++++++++++++++++~~~~~....+...........#
 #........gggggg..+~~~~~....+...........#
 #........gggggg..++++++++++++++........#
-#.....##.gggggg...............+........#
-#.....##......................+FFFFFFFF#
-#.............................+FppppppF#
-#............................K+FppppppF#
-#......##.....................+FppppppF#
-#......##.....................+FFFFFFFF#
-#......................................#
-#......................................#
+#.....##.gggggg.......+.......+........#
+#.....##..............+I......+FFFFFFFF#
+#.....................+.......+FppppppF#
+#.....................+......K+FppppppF#
+#......##.............+.......+FppppppF#
+#......##..........BB+++BB....+FFFFFFFF#
+#...................BB+BB..............#
+#...................BBBBB..............#
 #......................................#
 ########################################
 `);
@@ -235,12 +236,12 @@ ooooooooooooooooo
 .................
 ..X...X...X...X..
 .................
+..X...........X..
+.................
+..X...........X..
+.................
 .................
 ..X...X...X...X..
-.................
-.................
-..X...X...X...X..
-.................
 .................
 ooooooooDoooooooo
 `);
@@ -322,20 +323,22 @@ export const WORLD = {
   // room variety. Footprints must line up with the 'X' tiles in the DISCOVERY map above.
   exhibits: {
     discovery: [
-      // Lion gallery (left columns 2 & 6)
-      { animal: 'lion', key: 'pride', at: { r: 2, c: 2 } },
-      { animal: 'lion', key: 'diet', at: { r: 2, c: 6 } },
-      { animal: 'lion', key: 'range', at: { r: 5, c: 2 } },
-      { animal: 'lion', key: 'build', at: { r: 5, c: 6 } },
-      { animal: 'lion', key: 'roar', at: { r: 8, c: 2 } },
-      { animal: 'lion', key: 'size', at: { r: 8, c: 6 } },
-      // Elephant gallery (right columns 10 & 14)
-      { animal: 'elephant', key: 'herd', at: { r: 2, c: 10 } },
-      { animal: 'elephant', key: 'diet', at: { r: 2, c: 14 } },
-      { animal: 'elephant', key: 'range', at: { r: 5, c: 10 } },
-      { animal: 'elephant', key: 'tusks', at: { r: 5, c: 14 } },
-      { animal: 'elephant', key: 'ears', at: { r: 8, c: 10 } },
-      { animal: 'elephant', key: 'size', at: { r: 8, c: 14 } },
+      // Top row — lion left, elephant right
+      { animal: 'lion',     key: 'pride', at: { r: 2, c: 2  } },
+      { animal: 'lion',     key: 'diet',  at: { r: 2, c: 6  } },
+      { animal: 'elephant', key: 'herd',  at: { r: 2, c: 10 } },
+      { animal: 'elephant', key: 'diet',  at: { r: 2, c: 14 } },
+      // Left wall — lion
+      { animal: 'lion',     key: 'range', at: { r: 4, c: 2  } },
+      { animal: 'lion',     key: 'build', at: { r: 6, c: 2  } },
+      // Right wall — elephant
+      { animal: 'elephant', key: 'range', at: { r: 4, c: 14 } },
+      { animal: 'elephant', key: 'tusks', at: { r: 6, c: 14 } },
+      // Bottom row — lion left, elephant right
+      { animal: 'lion',     key: 'roar',  at: { r: 9, c: 2  } },
+      { animal: 'lion',     key: 'size',  at: { r: 9, c: 6  } },
+      { animal: 'elephant', key: 'ears',  at: { r: 9, c: 10 } },
+      { animal: 'elephant', key: 'size',  at: { r: 9, c: 14 } },
     ],
   },
   // Lawn/standing signs: bumping or clicking one opens an info modal with this title/body.
@@ -347,6 +350,8 @@ export const WORLD = {
     savanna: [
       { at: { r: 7, c: 7 }, title: 'Savanna Discovery Center',
         body: 'Step inside to learn about the animals — then test yourself with the keepers.' },
+      { at: { r: 17, c: 23 }, title: "Marco's Snack Shack",
+        body: 'Samosas, roasted peanuts, and mango lemonade. Perfect for a hot savanna day!' },
     ],
   },
   // The pool of encounters that can appear in a map's tall grass. Each successful grass
