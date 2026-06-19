@@ -37,6 +37,105 @@ export function pickSmug(rival, outcome, rng = Math.random) {
 }
 
 export const PEOPLE = {
+  entrance: [
+    // Upper ticket booth — B tiles at cols 27-28, rows 6-9. Seller stands at col 26;
+    // queue extends left toward the path.
+    {
+      id: 'tara',
+      kind: 'friendly',
+      name: 'Tara',
+      home: { r: 8, c: 26 },
+      roam: false,
+      look: { skin: '#d4a074', hair: '#2a1a10', hairStyle: 'ponytail', shirt: '#3a6b9e', trousers: '#2a3a4a' },
+      lines: [
+        'Welcome! Adult tickets are $12, children $8. Enjoy your visit!',
+        'Family of four? That\'s $36 — a great deal for the whole day.',
+        'Don\'t lose your ticket — you\'ll need it at the turnstile. Have a wonderful time!',
+        'The savanna is our most popular exhibit. I\'d head there first if I were you!',
+      ],
+    },
+    {
+      id: 'mia',
+      kind: 'friendly',
+      name: 'Mia',
+      home: { r: 8, c: 25 },
+      roam: false,
+      look: { skin: '#e8c49a', hair: '#4a2a10', hairStyle: 'bun', shirt: '#e04858', trousers: '#3a3a44' },
+    },
+    {
+      id: 'tom',
+      kind: 'friendly',
+      name: 'Tom',
+      home: { r: 8, c: 24 },
+      roam: false,
+      look: { skin: '#c87a4a', hair: '#1a120c', hairStyle: 'short', shirt: '#4a8a5a', trousers: '#3a3840' },
+    },
+    {
+      id: 'sophie',
+      kind: 'friendly',
+      name: 'Sophie',
+      home: { r: 9, c: 25 },
+      roam: false,
+      look: { skin: '#b06840', hair: '#1a150f', hairStyle: 'ponytail', shirt: '#9a5ab4', trousers: '#3a3040' },
+    },
+    // Lower ticket booth — B tiles at cols 27-28, rows 11-14.
+    {
+      id: 'benny',
+      kind: 'friendly',
+      name: 'Benny',
+      home: { r: 11, c: 26 },
+      roam: false,
+      look: { skin: '#8a5a3c', hair: '#100c08', hairStyle: 'short', shirt: '#3a6b9e', trousers: '#2a3a4a' },
+      lines: [
+        'Welcome! One ticket? Coming right up. Have a brilliant day at the zoo!',
+        'Group booking? Just tell me how many and I\'ll sort you out.',
+        'The lions and elephants are brilliant today — great day to visit!',
+        'Keep your ticket safe — you\'ll need it at the gate. Enjoy!',
+      ],
+    },
+    {
+      id: 'joe',
+      kind: 'friendly',
+      name: 'Joe',
+      home: { r: 11, c: 25 },
+      roam: false,
+      look: { skin: '#d8a07a', hair: '#2a1810', hairStyle: 'short', shirt: '#d4601a', trousers: '#3a3028' },
+    },
+    {
+      id: 'dana',
+      kind: 'friendly',
+      name: 'Dana',
+      home: { r: 11, c: 24 },
+      roam: false,
+      look: { skin: '#e0b48c', hair: '#5a3a22', hairStyle: 'bun', shirt: '#4a6f8a', trousers: '#46506b', hat: 'sun' },
+    },
+    {
+      id: 'patel',
+      kind: 'friendly',
+      name: 'Patel',
+      home: { r: 12, c: 25 },
+      roam: false,
+      look: { skin: '#7a4a28', hair: '#100c08', hairStyle: 'short', shirt: '#3a6a4a', trousers: '#3a3a4a' },
+    },
+    // Roaming visitors — wander the open ground between parking and stream.
+    {
+      id: 'kim',
+      kind: 'friendly',
+      name: 'Kim',
+      home: { r: 11, c: 8 },
+      roam: true,
+      look: { skin: '#c98a5a', hair: '#2a2018', hairStyle: 'bun', shirt: '#e8c840', trousers: '#3a4838' },
+    },
+    {
+      id: 'alex',
+      kind: 'friendly',
+      name: 'Alex',
+      home: { r: 5, c: 10 },
+      roam: true,
+      look: { skin: '#b07840', hair: '#1a1510', hairStyle: 'short', shirt: '#d06040', trousers: '#3a3844', hat: 'cap' },
+    },
+  ],
+
   plaza: [
     {
       id: 'pip',

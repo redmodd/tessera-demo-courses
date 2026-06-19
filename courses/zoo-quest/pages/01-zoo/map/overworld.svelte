@@ -39,6 +39,7 @@
   import { hasTuft } from '../../../lib/decor.js';
   import SavannaDecor from '../../../components/SavannaDecor.svelte';
   import PlazaDecor from '../../../components/PlazaDecor.svelte';
+  import EntranceDecor from '../../../components/EntranceDecor.svelte';
 
   const TILE = 56; // px per tile (sprites stay crisp; the window shows more of the map)
   const STEP_MS = 220;
@@ -945,6 +946,10 @@
 
     {#if mapId === 'plaza'}
       <PlazaDecor tile={TILE} />
+    {/if}
+
+    {#if mapId === 'entrance'}
+      <EntranceDecor tile={TILE} />
     {/if}
 
     {#each keepersOnMap as e (e.animal)}
