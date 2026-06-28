@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       tessera-learn:
-        specifier: 0.3.0
-        version: 0.3.0(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0)
+        specifier: 0.4.0
+        version: 0.4.0(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0)
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.11.3
@@ -563,8 +563,8 @@ packages:
   teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
 
-  tessera-learn@0.3.0:
-    resolution: {integrity: sha512-BXvu0dwdSbfXILjCzOq7c+F+sRSGB0O50gcl4MUHXkN5WBRY3RvYyTcLDsm6hUDAM1i+pF+RFifHWviInS2gYg==}
+  tessera-learn@0.4.0:
+    resolution: {integrity: sha512-n6DnoL8LuuDDxYJOP7wyKTzkC8HHKg0y/lJJjTD9GapmPU9PFOfVT8Pe+m5d3ktEbAvxBsx0DSoJpIN3vzbf2g==}
     engines: {node: '>=24'}
     hasBin: true
     peerDependencies:
@@ -1109,10 +1109,10 @@ snapshots:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
-      '@sveltejs/acorn-typescript': 1.0.10(acorn@8.16.0)
+      '@sveltejs/acorn-typescript': 1.0.10(acorn@8.17.0)
       '@types/estree': 1.0.9
       '@types/trusted-types': 2.0.7
-      acorn: 8.16.0
+      acorn: 8.17.0
       aria-query: 5.3.1
       axobject-query: 4.1.0
       clsx: 2.1.1
@@ -1144,7 +1144,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tessera-learn@0.3.0(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0):
+  tessera-learn@0.4.0(@axe-core/playwright@4.11.3(playwright-core@1.60.0))(playwright@1.60.0):
     dependencies:
       '@sveltejs/acorn-typescript': 1.0.10(acorn@8.17.0)
       '@sveltejs/vite-plugin-svelte': 7.1.2(svelte@5.56.3)(vite@8.0.16)
