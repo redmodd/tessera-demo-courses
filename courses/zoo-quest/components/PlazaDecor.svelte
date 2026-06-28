@@ -1,8 +1,12 @@
 <script>
-  // Decorative overlay for the plaza overworld — four vendor stalls: ice cream cart
-  // and snack stall on the left, drinks cart and souvenir cart on the right.
-  // Drawn above tile cells (z-index 1) but below character sprites (z-index 2).
-  // Coordinates match the 'B' tiles in worldmap.js.
+  // Decorative overlay for the plaza overworld. Two groups of 'B' props, both drawn above
+  // tile cells (z-index 1) but below character sprites (z-index 2):
+  //   • Vendor carts — ice cream + snack stall down the west path, drinks + souvenir off
+  //     the east. Each has a tending patron beside it (see PEOPLE.plaza in lib/people.js).
+  //   • Street furniture — benches, lamp posts, a bin, and flower planters, scattered
+  //     unevenly to break the square's symmetry.
+  // Every coordinate here MUST match a 'B' tile in worldmap.js, or the sprite floats over a
+  // walkable cell while an invisible blocker sits elsewhere.
 
   let { tile } = $props();
 </script>
@@ -128,27 +132,111 @@
   </svg>
 {/snippet}
 
+{#snippet bench()}
+  <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}" aria-hidden="true">
+    <ellipse cx="28" cy="49" rx="22" ry="3" fill="rgba(0,0,0,0.12)"/>
+    <!-- backrest -->
+    <rect x="8" y="18" width="40" height="4" rx="1" fill="#9a6a3a"/>
+    <rect x="8" y="24" width="40" height="3" rx="1" fill="#8a5e34"/>
+    <rect x="10" y="22" width="3" height="10" fill="#7a5230"/>
+    <rect x="43" y="22" width="3" height="10" fill="#7a5230"/>
+    <!-- seat -->
+    <rect x="8" y="30" width="40" height="5" rx="1" fill="#9a6a3a"/>
+    <rect x="8" y="30" width="40" height="2" fill="rgba(255,255,255,0.16)"/>
+    <!-- legs -->
+    <rect x="12" y="35" width="4" height="12" fill="#4a4a52"/>
+    <rect x="40" y="35" width="4" height="12" fill="#4a4a52"/>
+  </svg>
+{/snippet}
+
+{#snippet lampPost()}
+  <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}" aria-hidden="true">
+    <ellipse cx="28" cy="50" rx="9" ry="2.5" fill="rgba(0,0,0,0.16)"/>
+    <!-- pole + base -->
+    <rect x="26" y="15" width="4" height="35" rx="1.5" fill="#3a3a44"/>
+    <rect x="22" y="48" width="12" height="4" rx="1" fill="#2e2e38"/>
+    <!-- glow + lantern -->
+    <circle cx="28" cy="12" r="8" fill="#fff2b0" opacity="0.55"/>
+    <rect x="24" y="8" width="8" height="10" rx="2" fill="#f4d24a"/>
+    <rect x="23" y="5" width="10" height="3.5" rx="1" fill="#3a3a44"/>
+    <rect x="27" y="2" width="2" height="3" fill="#3a3a44"/>
+  </svg>
+{/snippet}
+
+{#snippet bin()}
+  <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}" aria-hidden="true">
+    <ellipse cx="28" cy="50" rx="11" ry="3" fill="rgba(0,0,0,0.12)"/>
+    <!-- body -->
+    <rect x="18" y="23" width="20" height="27" rx="3" fill="#3a6a4a"/>
+    <rect x="22" y="29" width="3" height="15" fill="rgba(255,255,255,0.14)"/>
+    <rect x="31" y="29" width="3" height="15" fill="rgba(0,0,0,0.10)"/>
+    <!-- lid -->
+    <rect x="18" y="22" width="20" height="4" fill="#2e5a3e"/>
+    <rect x="16" y="18" width="24" height="6" rx="2" fill="#2e5a3e"/>
+    <rect x="25" y="15" width="6" height="3" rx="1" fill="#244a32"/>
+  </svg>
+{/snippet}
+
+{#snippet planter()}
+  <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}" aria-hidden="true">
+    <ellipse cx="28" cy="50" rx="15" ry="3" fill="rgba(0,0,0,0.12)"/>
+    <!-- foliage -->
+    <circle cx="18" cy="26" r="8" fill="#4a8a44"/>
+    <circle cx="38" cy="26" r="8" fill="#4a8a44"/>
+    <circle cx="28" cy="21" r="9" fill="#56994f"/>
+    <!-- blooms -->
+    <circle cx="20" cy="24" r="2.5" fill="#e86a8a"/>
+    <circle cx="30" cy="19" r="2.5" fill="#f4c84a"/>
+    <circle cx="36" cy="26" r="2.5" fill="#e86a8a"/>
+    <circle cx="26" cy="26" r="2.5" fill="#f4f0f0"/>
+    <!-- box -->
+    <rect x="12" y="32" width="32" height="16" rx="2" fill="#a06a40"/>
+    <rect x="12" y="32" width="32" height="4" fill="#8a5a34"/>
+    <rect x="12" y="44" width="32" height="4" rx="1" fill="#7a4e2e"/>
+  </svg>
+{/snippet}
+
 <div class="plaza-decor" aria-hidden="true">
 
-  <!-- Ice cream cart — row 6, col 7 -->
+  <!-- Vendor carts (coords match the 'B' tiles in worldmap.js; patrons tend each) -->
+
+  <!-- Ice cream cart — row 6, col 7 (Lena) -->
   <div class="decor" style="left:{7 * tile}px; top:{6 * tile}px;">
     {@render iceCreamCart()}
   </div>
 
-  <!-- Drinks cart — row 6, col 24 -->
+  <!-- Snack stall — row 8, col 7 (Jen) — clustered below the ice cream cart on the west path -->
+  <div class="decor" style="left:{7 * tile}px; top:{8 * tile}px;">
+    {@render snackStall()}
+  </div>
+
+  <!-- Drinks cart — row 6, col 24 (Rosa) -->
   <div class="decor" style="left:{24 * tile}px; top:{6 * tile}px;">
     {@render drinksCart()}
   </div>
 
-  <!-- Snack stall — row 14, col 7 -->
-  <div class="decor" style="left:{7 * tile}px; top:{14 * tile}px;">
-    {@render snackStall()}
-  </div>
-
-  <!-- Souvenir cart — row 14, col 24 -->
-  <div class="decor" style="left:{24 * tile}px; top:{14 * tile}px;">
+  <!-- Souvenir cart — row 13, col 24 (Ed) -->
+  <div class="decor" style="left:{24 * tile}px; top:{13 * tile}px;">
     {@render souvenirCart()}
   </div>
+
+  <!-- Street furniture — scattered unevenly to break the square's symmetry -->
+
+  <!-- Benches: a seating nook by the west entrance + one in front of the shop -->
+  <div class="decor" style="left:{4 * tile}px; top:{9 * tile}px;">{@render bench()}</div>
+  <div class="decor" style="left:{4 * tile}px; top:{11 * tile}px;">{@render bench()}</div>
+  <div class="decor" style="left:{13 * tile}px; top:{6 * tile}px;">{@render bench()}</div>
+
+  <!-- Lamp posts flanking the pond, off-axis -->
+  <div class="decor" style="left:{12 * tile}px; top:{7 * tile}px;">{@render lampPost()}</div>
+  <div class="decor" style="left:{19 * tile}px; top:{14 * tile}px;">{@render lampPost()}</div>
+
+  <!-- Bin beside the lower west bench, by the food carts -->
+  <div class="decor" style="left:{5 * tile}px; top:{11 * tile}px;">{@render bin()}</div>
+
+  <!-- Flower planters, diagonally placed -->
+  <div class="decor" style="left:{10 * tile}px; top:{1 * tile}px;">{@render planter()}</div>
+  <div class="decor" style="left:{21 * tile}px; top:{18 * tile}px;">{@render planter()}</div>
 
 </div>
 

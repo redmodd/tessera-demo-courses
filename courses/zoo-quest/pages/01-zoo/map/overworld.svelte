@@ -40,6 +40,7 @@
   import SavannaDecor from '../../../components/SavannaDecor.svelte';
   import PlazaDecor from '../../../components/PlazaDecor.svelte';
   import EntranceDecor from '../../../components/EntranceDecor.svelte';
+  import PolarDecor from '../../../components/PolarDecor.svelte';
 
   const TILE = 56; // px per tile (sprites stay crisp; the window shows more of the map)
   const STEP_MS = 220;
@@ -57,6 +58,8 @@
     savanna: 'Savanna',
     centre: 'Gift Shop',
     discovery: 'Discovery Center',
+    polar: 'Polar',
+    'polar-discovery': 'Polar Research Station',
   };
 
   // Arrow keys / WASD → [rowDelta, colDelta].
@@ -318,6 +321,11 @@
       for (let i = 0; i < e.count && tiles.length; i++) {
         const t = tiles[(i * 2) % tiles.length];
         list.push({
+          // Stable per-critter key so the {#each} below keys by identity, not array index.
+          // Index keys made Svelte reuse a node across maps (e.g. polar→savanna), and the
+          // .critter.smooth transition then animated it from the old pen to the new — the
+          // "animals fly across the map" bug. A fresh id per spawn → fresh node, no glide.
+          id: `${e.animal}-${i}`,
           animal: e.animal,
           r: t.r,
           c: t.c,
@@ -808,7 +816,7 @@
           aria-hidden="true"
         >
           {#if t.icon}<span class="glyph"><Icon name={t.icon} /></span>{/if}
-          {#if t.cls === 'ground' && !WORLD.interiors.includes(mapId) && hasTuft(r, c)}<GrassTuft dry={mapId === 'savanna'} />{/if}
+          {#if t.cls === 'ground' && !WORLD.interiors.includes(mapId) && hasTuft(r, c)}<GrassTuft dry={mapId === 'savanna'} snow={mapId === 'polar'} />{/if}
         </button>
       {/each}
     {/each}
@@ -948,6 +956,9 @@
       <PlazaDecor tile={TILE} />
     {/if}
 
+    {#if mapId === 'polar'}
+      <PolarDecor tile={TILE} />
+    {/if}
     {#if mapId === 'entrance'}
       <EntranceDecor tile={TILE} />
     {/if}
@@ -962,7 +973,7 @@
       </button>
     {/each}
 
-    {#each critters as cr, i (i)}
+    {#each critters as cr (cr.id)}
       <div class="sprite critter" class:smooth={!reduceMotion}
         style="width:{TILE}px; height:{TILE}px; --cw:{cr.glideMs}ms;
           transform: translate3d({cr.c * TILE}px, {cr.r * TILE}px, 0);"
@@ -1085,7 +1096,8 @@
   /* Dominant ground: a flat field colour broken up by a soft mottle. The per-cell
      background-position (set inline) shares one board-wide origin, so the mottle is
      continuous across tiles instead of repeating on the 56px grid. */
-  .cell.ground {
+  .cell.ground,
+  .cell.prop {
     background:
       radial-gradient(40px 28px at 22% 32%, var(--mottle-hi), transparent 72%),
       radial-gradient(46px 32px at 72% 64%, var(--mottle-lo), transparent 72%),
@@ -1095,6 +1107,9 @@
     background-size: 150px 120px;
   }
   .cell.grass { background: var(--tall-grass); }
+  /* Polar encounter patches read as a bluer slush of ice, not green tufts: the leaf glyph
+     would look like summer plants in the snow, so hide it and let the colour carry it. */
+  .board.area-polar .cell.grass .glyph { display: none; }
   .cell.path { background: var(--path); } /* groomed dirt route */
   /* Under the blob, the water cell shows the shore colour so the blob's concave dips read
      as bank, not a blue square edge. The blue water itself is painted by the .water-layer
@@ -1145,8 +1160,10 @@
   .cell.shelf { background: var(--shelf-fill); cursor: not-allowed; }
   /* Lawn sign: sits on the plaza ground and is clickable (walk over + read). */
   .cell.sign { background: var(--ground-field); cursor: pointer; }
-  /* Silent scenery prop (bench, bin, cart): blocked obstacle, no glyph, no interaction. */
-  .cell.prop { background: var(--ground-field); cursor: default; }
+  /* Silent scenery prop (bench, bin, cart): blocked obstacle, no glyph, no interaction.
+     Shares the mottled .cell.ground fill (above) so the prop sprite sits on grass rather
+     than a flat patch; only the cursor differs. */
+  .cell.prop { cursor: default; }
   /* Exhibit board: clickable; only appears interior, where .area-discovery + the
      InteriorDecor poster give it its framed-panel look. */
   .cell.display { background: var(--ground-field); cursor: pointer; }
@@ -1262,6 +1279,32 @@
   .board.area-discovery .cell.door .glyph { display: none; }
   /* Display tiles read as plain plank floor; each panel's own art (framed board, glass
      case, kiosk, standee) is drawn over the tile by InteriorDecor, so no generic frame. */
+
+  /* The Polar Research Station: the same interior shape as the Discovery Center, but a
+     cool icy palette — pale blue-grey "ice plank" floor and a slate wall band. */
+  .board.area-polar-discovery { --centre-wall: #4f6173; }
+  .board.area-polar-discovery .cell.ground,
+  .board.area-polar-discovery .cell.building,
+  .board.area-polar-discovery .cell.display {
+    background:
+      repeating-linear-gradient(0deg, #dce8f1 0 26px, #c7d7e4 26px 28px),
+      #dce8f1;
+    background-size: auto;
+    box-shadow: none;
+  }
+  .board.area-polar-discovery .we-top { box-shadow: inset 0 14px 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-bottom { box-shadow: inset 0 -14px 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-left { box-shadow: inset 14px 0 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-right { box-shadow: inset -14px 0 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-tl { box-shadow: inset 0 14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-tr { box-shadow: inset 0 14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-bl { box-shadow: inset 0 -14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
+  .board.area-polar-discovery .we-br { box-shadow: inset 0 -14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
+  .board.area-polar-discovery .cell.door {
+    background: var(--ground-earth);
+    box-shadow: inset 0 0 0 2px rgba(79, 97, 115, 0.6);
+  }
+  .board.area-polar-discovery .cell.door .glyph { display: none; }
   /* ===== end interior polish ===== */
   .cell.connector {
     background: var(--ground-earth);

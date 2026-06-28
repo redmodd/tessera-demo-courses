@@ -1,11 +1,14 @@
 <script>
   // A small decorative grass tuft scattered on themed ground (see lib/decor.js). Five
-  // short blades; `dry` switches to a yellowed palette for the savanna. Purely
+  // short blades; `dry` switches to a yellowed palette for the savanna, `snow` to a pale
+  // frost palette for the polar field (frosted grass poking through the snow). Purely
   // ornamental — aria-hidden, and pointer-events:none so it never eats a tile click.
-  let { dry = false } = $props();
-  const c = dry
-    ? ['#8a8338', '#9aa04e', '#b0a85e']
-    : ['#5f7a3e', '#6f8c49', '#7d9a55'];
+  let { dry = false, snow = false } = $props();
+  const c = snow
+    ? ['#c2d4e2', '#d6e3ee', '#acc4d6']
+    : dry
+      ? ['#8a8338', '#9aa04e', '#b0a85e']
+      : ['#5f7a3e', '#6f8c49', '#7d9a55'];
 </script>
 
 <svg class="tuft" viewBox="0 0 24 18" width="20" height="15" aria-hidden="true">

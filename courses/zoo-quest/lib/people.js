@@ -185,7 +185,7 @@ export const PEOPLE = {
       id: 'ed',
       kind: 'friendly',
       name: 'Ed',
-      home: { r: 14, c: 23 },
+      home: { r: 13, c: 23 },
       roam: false,
       look: { skin: '#c8785a', hair: '#2a1810', hairStyle: 'short', shirt: '#4a5ab4', trousers: '#3a3844' },
       lines: [
@@ -235,7 +235,7 @@ export const PEOPLE = {
       id: 'jen',
       kind: 'friendly',
       name: 'Jen',
-      home: { r: 14, c: 8 },
+      home: { r: 8, c: 8 },
       roam: false,
       look: { skin: '#d8a07a', hair: '#2a1810', hairStyle: 'short', shirt: '#e07030', trousers: '#4a3a28', hat: 'cap' },
       lines: [
@@ -443,6 +443,128 @@ export const PEOPLE = {
         'Welcome in! Every display here teaches you something about the savanna’s animals — explore them all.',
         'Welcome, explorer! Wander the room and read the exhibits to discover the lions and elephants of the savanna.',
         'Welcome! Take your time — each easel, case, and screen tells you more about the animals of the savanna.',
+      ],
+    },
+  ],
+
+  polar: [
+    {
+      id: 'nina',
+      kind: 'friendly',
+      name: 'Nina',
+      home: { r: 10, c: 4 },
+      roam: false,
+      look: { skin: '#e0b48c', hair: '#5a3a22', hairStyle: 'bun', shirt: '#3a6ea5', trousers: '#3a3a4a', hat: 'cap' },
+    },
+    {
+      id: 'omar',
+      kind: 'friendly',
+      name: 'Omar',
+      home: { r: 12, c: 5 },
+      roam: true,
+      look: { skin: '#8a5a3c', hair: '#1b1712', hairStyle: 'short', shirt: '#b23b3b', trousers: '#2e3a4a', hat: 'cap' },
+    },
+    {
+      id: 'yuki',
+      kind: 'friendly',
+      name: 'Yuki',
+      home: { r: 16, c: 10 },
+      roam: true,
+      look: { skin: '#e8c49a', hair: '#2a2018', hairStyle: 'ponytail', shirt: '#4e8a72', trousers: '#3a4658' },
+    },
+    {
+      id: 'ben',
+      kind: 'friendly',
+      name: 'Ben',
+      home: { r: 8, c: 18 },
+      roam: false,
+      look: { skin: '#6b4a30', hair: '#15110d', hairStyle: 'short', shirt: '#5a5a8a', trousers: '#34405a', hat: 'cap' },
+    },
+    {
+      id: 'vendor-polar',
+      kind: 'friendly',
+      name: 'Pia',
+      home: { r: 23, c: 7 },
+      roam: false,
+      look: { skin: '#d49a6a', hair: '#3a2418', hairStyle: 'ponytail', shirt: '#c0392b', trousers: '#3a3a4a', hat: 'cap' },
+      lines: [
+        'Hot cocoa, cinnamon buns, maple toffee — everything to warm you up!',
+        'The cocoa has a marshmallow snowman on top. Cutest drink in the zoo.',
+        'Cold out on the ice, isn’t it? A warm cup does wonders. What can I get you?',
+        'The penguins keep eyeing my fish rolls. Sorry, penguins — these are for visitors!',
+      ],
+    },
+    {
+      id: 'glacier',
+      kind: 'rival',
+      name: 'Madame Glacier',
+      home: { r: 15, c: 23 },
+      roam: false,
+      look: { skin: '#d8c0b0', hair: '#cdd6de', hairStyle: 'bun', shirt: '#2e5a8a', trousers: '#2a2e3a', hat: 'bowler', glasses: true, bowtie: true },
+      intro:
+        'A wanderer on MY ice? I am Madame Glacier, and the poles hold no secret from me. I wager you can’t answer a single question correctly.',
+      quiz: [
+        {
+          question: 'When a polar bear hunts, which sense matters most?',
+          options: ['Sight', 'Smell', 'Taste', 'Hearing'],
+          correct: 1,
+        },
+        {
+          question: 'Which of these can a penguin NOT do?',
+          options: ['Swim', 'Walk', 'Fly through the air', 'Huddle for warmth'],
+          correct: 2,
+        },
+        {
+          question: 'A group of penguins on land is sometimes called a what?',
+          options: ['A waddle', 'A pride', 'A pack', 'A flock'],
+          correct: 0,
+        },
+        {
+          question: 'A polar bear’s fur is not really white. What is it?',
+          options: ['Blue', 'Grey', 'See-through', 'Painted'],
+          correct: 2,
+        },
+        {
+          question: 'Penguins and polar bears live at opposite poles. Which lives in the NORTH?',
+          options: ['The penguin', 'The polar bear', 'Both of them', 'Neither of them'],
+          correct: 1,
+        },
+      ],
+      reactions: {
+        right: 'Hmph. A lucky guess.',
+        wrong: 'Ha! Frozen solid, just as I expected.',
+        win: '…Astonishing. Every answer correct. Perhaps the ice has finally met its match.',
+        lose: 'Just as I thought. Come back when you’ve thawed out that brain of yours!',
+      },
+      smug: {
+        won: [
+          'Back already? You bested me once. I shan’t risk it twice.',
+          'Yes, yes, you won. No need to rub it in, wanderer.',
+          'The champion of the cold returns. I’ve nothing left to ask. Hmph.',
+        ],
+        lost: [
+          'Ah, the wanderer slinks back across my ice. Studied yet? I thought not.',
+          'Come to lose again? I’ll spare us both the frostbite.',
+          'Run along. The exhibits won’t learn themselves — and clearly neither will you.',
+        ],
+      },
+    },
+  ],
+
+  'polar-discovery': [
+    {
+      id: 'frost',
+      kind: 'friendly',
+      name: 'Keeper Frost',
+      home: { r: 6, c: 8 },
+      roam: false,
+      sprite: 'keeper',
+      look: { skin: '#8a5a3c', hair: '#15110d', hairStyle: 'short', shirt: '#3a6ea5', trousers: '#2e3a4a', cap: '#28455f' },
+      lines: [
+        'Welcome to the Polar Research Station! Have a look around to learn all about our animals.',
+        'Welcome in! Every display here teaches you something about the penguins and polar bears — explore them all.',
+        'Welcome, explorer! Wander the room and read the exhibits to discover life at the freezing poles.',
+        'Welcome! Take your time — each easel, case, and screen tells you more about the animals of the ice.',
       ],
     },
   ],

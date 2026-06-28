@@ -236,6 +236,233 @@ export const ANIMALS = {
       { question: 'Which two features make elephants easy to recognise?', options: ['Their trunk and big ears', 'Their wings', 'Their stripes', 'Their shell'], correct: 0 },
     ],
   },
+  penguin: {
+    id: 'penguin',
+    dex: '004',
+    name: 'Penguin',
+    region: 'polar',
+    wanderMs: 900, // quick, busy little waddles
+    glideMs: 420,
+    stats: 'Eats fish & krill · lives in the far South · a flightless bird',
+    blurb: 'A bird that swims instead of flies.',
+    facts: [
+      'A <strong>bird that cannot fly</strong> through the air — but it "<strong>flies</strong>" underwater.',
+      'They <strong>huddle together</strong> for warmth, taking turns on the cold outside edge.',
+      'Emperor penguin <strong>dads balance the egg on their feet</strong> through the winter.',
+      'Black-and-white colouring is <strong>camouflage</strong> from above and below.',
+    ],
+    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
+    // of display showing different information. Between them they cover the themes the keeper
+    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
+    // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
+    exhibit: {
+      displays: {
+        colony: {
+          type: 'poster',
+          title: 'Life in the Colony',
+          intro: 'Penguins live together in huge groups.',
+          facts: [
+            'A big group of penguins is called a <strong>colony</strong> (a breeding group is a <strong>rookery</strong>).',
+            'To beat the cold they <strong>huddle tightly together</strong>, taking turns on the freezing outside edge so everyone stays warm.',
+            'A baby penguin is a <strong>chick</strong>, and <strong>both parents</strong> help feed and protect it.',
+          ],
+        },
+        diet: {
+          type: 'diet',
+          title: 'Hunters of the Sea',
+          intro: 'Penguins are <strong>carnivores</strong> — they hunt food in the ocean.',
+          facts: [
+            'They eat <strong>fish, krill, and squid</strong>, chasing them down underwater.',
+            'They have <strong>no teeth</strong>; a spiny tongue and beak grip slippery prey so it can be swallowed whole.',
+            'Penguins can <strong>drink seawater</strong> — a special gland near the eyes removes the salt.',
+          ],
+        },
+        size: {
+          type: 'size',
+          title: 'How Big Is a Penguin?',
+          intro: 'Penguins come in many sizes.',
+          facts: [
+            'The <strong>emperor penguin</strong> is the tallest — about as tall as a <strong>six-year-old child</strong>.',
+            'The <strong>little blue penguin</strong> is the smallest, only about as tall as a ruler.',
+          ],
+        },
+        swim: {
+          type: 'touchscreen',
+          title: 'Did You Know?',
+          question: 'If a penguin can’t fly, how does it move so fast?',
+          answer:
+            'It "<strong>flies</strong>" underwater! Its wings are stiff <strong>flippers</strong> and its body is smooth and streamlined, so it shoots through the sea after fish.',
+        },
+        build: {
+          type: 'specimen',
+          title: 'Built for the Cold',
+          specimen: 'Feathers & blubber',
+          intro: 'A closer look at how a penguin stays warm and dry.',
+          facts: [
+            'Dense, <strong>waterproof feathers</strong> over a layer of fat (<strong>blubber</strong>) keep out the cold and wet.',
+            'Its <strong>wings are flippers</strong> and its feet are <strong>webbed</strong> for swimming and steering.',
+            'A black back and white belly is <strong>countershading</strong> — hard to spot from above or below.',
+          ],
+        },
+        range: {
+          type: 'map',
+          title: 'Where Penguins Live',
+          region: 'The far South',
+          intro: 'Almost all wild penguins live in the Southern Hemisphere.',
+          facts: [
+            'They live around <strong>Antarctica</strong> and southern coasts — never at the North Pole.',
+            'So penguins and polar bears <strong>never meet</strong> in the wild: opposite ends of the Earth.',
+          ],
+        },
+      },
+    },
+    // Keeper question bank — the keeper asks 10 random of these (all correct → card).
+    quizBank: [
+      { question: 'What kind of animal is a penguin?', options: ['A fish', 'A bird', 'A mammal', 'A reptile'], correct: 1 },
+      { question: 'Can a penguin fly through the air?', options: ['Yes, very high', 'No — but it "flies" underwater', 'Only at night', 'Yes, like an eagle'], correct: 1 },
+      { question: 'What do penguins mainly eat?', options: ['Grass and leaves', 'Fish, krill and squid', 'Fruit', 'Seeds'], correct: 1 },
+      { question: 'How do penguins keep warm in the cold?', options: ['They huddle together in a group', 'They light a fire', 'They dig deep tunnels', 'They fly south'], correct: 0 },
+      { question: 'What is a group of penguins called?', options: ['A pride', 'A colony', 'A pack', 'A herd'], correct: 1 },
+      { question: 'What is a baby penguin called?', options: ['A cub', 'A chick', 'A calf', 'A joey'], correct: 1 },
+      { question: 'Where do almost all wild penguins live?', options: ['The far North', 'The far South', 'Hot deserts', 'Rainforests'], correct: 1 },
+      { question: 'Do penguins live at the North Pole with polar bears?', options: ['Yes, side by side', 'No — penguins live in the south', 'Only in summer', 'Yes, in winter'], correct: 1 },
+      { question: "What are a penguin's wings shaped like?", options: ['Feathered fans for flying', 'Flippers for swimming', 'Tiny claws', 'Long arms'], correct: 1 },
+      { question: 'Why are penguins black on top and white underneath?', options: ['To look smart', 'For camouflage from above and below', 'To stay warm', 'To scare fish'], correct: 1 },
+      { question: 'Which penguin dad balances the egg on his feet all winter?', options: ['The little blue penguin', 'The emperor penguin', 'The rockhopper', 'No penguin does this'], correct: 1 },
+      { question: 'How do penguins move quickly in the water?', options: ['By paddling slowly', 'By "flying" with their flippers', 'By floating still', 'They sink'], correct: 1 },
+      { question: 'Besides feathers, what keeps a penguin warm?', options: ['A layer of fat (blubber)', 'A wool sweater', 'Hot breath', 'Nothing'], correct: 0 },
+      { question: 'When penguins huddle, how do they stay fair?', options: ['The biggest stays warmest', 'They take turns on the cold outside edge', 'Nobody moves', 'They push the babies out'], correct: 1 },
+      { question: 'Which is the tallest kind of penguin?', options: ['The little blue penguin', 'The emperor penguin', 'The macaroni penguin', 'They are all the same'], correct: 1 },
+      { question: 'How does a penguin grip a slippery fish?', options: ['With sharp teeth', 'With a spiny tongue and beak', 'With its flippers', 'With its feet'], correct: 1 },
+      { question: 'A penguin is best described as a...?', options: ['Great flier', 'Great swimmer', 'Fast runner', 'Tree climber'], correct: 1 },
+      { question: "What keeps water off a penguin's body?", options: ['Dense, waterproof feathers', 'A raincoat', 'Dry skin', 'Scales'], correct: 0 },
+      { question: 'How do penguin parents share the work?', options: ['Only the mother helps', 'Both parents feed and care for the chick', 'The chick is left alone', 'A keeper does it'], correct: 1 },
+      { question: 'How can penguins drink seawater safely?', options: ['They boil it first', 'A special gland removes the salt', 'They cannot — they only eat snow', 'They do not drink at all'], correct: 1 },
+      { question: "Why can't a penguin fly in the air?", options: ['It is too lazy', 'Its wings are flippers, built for swimming', 'It has no wings', 'It is afraid of heights'], correct: 1 },
+      { question: 'What is a large penguin breeding group called?', options: ['A rookery', 'A nest box', 'A flock pad', 'A burrow'], correct: 0 },
+      { question: 'How do penguins dive deep for food?', options: ['They hold their breath and swim down', 'They use scuba tanks', 'They float and wait', 'They cannot dive'], correct: 0 },
+      { question: 'How do emperor penguins survive the freezing wind?', options: ['By huddling tightly together', 'By flying away', 'By burrowing in mud', 'By swimming all winter'], correct: 0 },
+      { question: 'What colour are most penguins?', options: ['Brown and green', 'Black and white', 'Bright red', 'Spotted'], correct: 1 },
+      { question: 'How do penguins often travel quickly over ice?', options: ['By sliding on their bellies', 'By hopping like a kangaroo', 'By rolling', 'By flying low'], correct: 0 },
+      { question: "Sliding along on its belly over the ice is called...?", options: ['Tobogganing', 'Galloping', 'Soaring', 'Burrowing'], correct: 0 },
+      { question: 'Which pole do penguins NOT live at?', options: ['The South Pole', 'The North Pole', 'Both poles', 'Neither pole'], correct: 1 },
+      { question: 'What do webbed feet help a penguin do?', options: ['Climb trees', 'Steer and push through the water', 'Dig burrows', 'Catch insects'], correct: 1 },
+      { question: 'Which is TRUE about penguins?', options: ['They are birds that swim instead of fly', 'They are fish with feathers', 'They live with polar bears', 'They breathe underwater'], correct: 0 },
+    ],
+  },
+  'polar-bear': {
+    id: 'polar-bear',
+    dex: '005',
+    name: 'Polar Bear',
+    region: 'polar',
+    wanderMs: 2000, // big, heavy, unhurried
+    glideMs: 850,
+    stats: 'Carnivore · lives in the far North · biggest land hunter',
+    blurb: 'White fur, black skin, master of the ice.',
+    facts: [
+      'The <strong>largest land meat-eater</strong> on the planet.',
+      'Its <strong>fur looks white but is see-through</strong>; the <strong>skin underneath is black</strong> to soak up the sun’s warmth.',
+      '<strong>Huge paws</strong> act like snowshoes and paddles.',
+      'It can <strong>smell a seal from over a kilometre</strong> away.',
+    ],
+    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
+    // of display showing different information. Between them they cover the themes the keeper
+    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
+    // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
+    exhibit: {
+      displays: {
+        arctic: {
+          type: 'poster',
+          title: 'Life on the Ice',
+          intro: 'Polar bears roam the frozen Arctic, mostly alone.',
+          facts: [
+            'A polar bear is a <strong>solitary wanderer</strong>, travelling huge distances across the <strong>sea ice</strong>.',
+            'A baby is a <strong>cub</strong>, born tiny in a cosy <strong>snow den</strong> in winter.',
+            'Cubs stay with their mother for about <strong>two years</strong>, learning to hunt.',
+          ],
+        },
+        diet: {
+          type: 'diet',
+          title: 'The Top Hunter',
+          intro: 'Polar bears are <strong>carnivores</strong> — they eat meat.',
+          facts: [
+            'They mainly hunt <strong>seals</strong>, waiting patiently beside holes in the ice where seals come up to breathe.',
+            'They need <strong>sea ice</strong> as a platform to hunt from — without it, hunting is hard.',
+          ],
+        },
+        size: {
+          type: 'size',
+          title: 'The Biggest Land Hunter',
+          intro: 'The largest meat-eater that lives on land.',
+          facts: [
+            'A big male can weigh as much as <strong>five or six adult people</strong>.',
+            'Standing up on its back legs, it <strong>towers over a person</strong>.',
+          ],
+        },
+        nose: {
+          type: 'touchscreen',
+          title: 'Did You Know?',
+          question: 'How does a polar bear find a seal hidden under the snow?',
+          answer:
+            'By <strong>smell</strong>! A polar bear can smell a seal from <strong>over a kilometre away</strong> — even through thick snow and ice.',
+        },
+        coat: {
+          type: 'specimen',
+          title: 'Fur, Skin & Paws',
+          specimen: 'A tuft of see-through fur',
+          intro: 'A closer look at how a polar bear beats the Arctic cold.',
+          facts: [
+            'Its fur <strong>looks white but is actually see-through</strong> — it scatters light and matches the snow.',
+            'The <strong>skin underneath is black</strong> to soak up the sun’s warmth, over a thick layer of <strong>blubber</strong>.',
+            'Its <strong>huge paws</strong> work like snowshoes on snow and like paddles when swimming.',
+          ],
+        },
+        range: {
+          type: 'map',
+          title: 'Where Polar Bears Live',
+          region: 'The far North (the Arctic)',
+          intro: 'Polar bears live around the North Pole.',
+          facts: [
+            'They roam the <strong>Arctic sea ice</strong> over the ocean and are <strong>strong swimmers</strong> between ice floes.',
+            'Penguins live at the opposite end of the Earth, so the two <strong>never meet</strong> in the wild.',
+          ],
+        },
+      },
+    },
+    // Keeper question bank — the keeper asks 10 random of these (all correct → card).
+    quizBank: [
+      { question: 'What is the largest land meat-eater on Earth?', options: ['The lion', 'The polar bear', 'The wolf', 'The tiger'], correct: 1 },
+      { question: "What colour is a polar bear's skin under its fur?", options: ['White', 'Pink', 'Black', 'Grey'], correct: 2 },
+      { question: "Is a polar bear's fur truly white?", options: ['Yes, pure white', 'No — it is see-through and only looks white', 'It is painted white', 'It is grey'], correct: 1 },
+      { question: 'What do polar bears mainly hunt and eat?', options: ['Seals', 'Grass', 'Fruit', 'Insects'], correct: 0 },
+      { question: 'Where do polar bears live?', options: ['The far North (the Arctic)', 'The far South', 'Hot deserts', 'Rainforests'], correct: 0 },
+      { question: 'What is a baby polar bear called?', options: ['A chick', 'A cub', 'A calf', 'A joey'], correct: 1 },
+      { question: "Why is a polar bear's skin black?", options: ['To look scary', 'To soak up the sun’s warmth', 'To hide from seals', 'It is just paint'], correct: 1 },
+      { question: 'How far away can a polar bear smell a seal?', options: ['A few steps', 'Over a kilometre away', 'Only when touching it', 'They cannot smell'], correct: 1 },
+      { question: "What do a polar bear's huge paws act like?", options: ['Snowshoes and paddles', 'Wings', 'Shovels only', 'Skis'], correct: 0 },
+      { question: 'Are polar bears good swimmers?', options: ['No, they sink', 'Yes, they are excellent swimmers', 'Only babies swim', 'They hate water'], correct: 1 },
+      { question: 'What keeps a polar bear warm in the Arctic?', options: ['Thick fur and a layer of fat', 'A coat from the keeper', 'Warm rocks', 'Nothing'], correct: 0 },
+      { question: 'What do polar bears need in order to hunt seals?', options: ['Sea ice to hunt from', 'Tall trees', 'Warm sand', 'Deep mud'], correct: 0 },
+      { question: 'Do polar bears live with penguins?', options: ['Yes, all the time', 'No — penguins live in the south', 'Only in zoos', 'Yes, at the South Pole'], correct: 1 },
+      { question: 'About how heavy is a big male polar bear?', options: ['Like a house cat', 'Like a small dog', 'As much as five or six people', 'As much as a mouse'], correct: 2 },
+      { question: 'What helps a polar bear walk on slippery ice?', options: ['Rough pads and claws on its paws', 'Tiny smooth feet', 'Suction cups', 'Wheels'], correct: 0 },
+      { question: 'How does a polar bear usually catch a seal?', options: ['It waits patiently by a hole in the ice', 'It climbs a tree', 'It digs underground', 'It uses a net'], correct: 0 },
+      { question: 'Why does a polar bear look white?', options: ['Its see-through fur scatters light and matches the snow', 'It is painted', 'It rolls in flour', 'Its skin is white'], correct: 0 },
+      { question: "What is a polar bear's strongest sense for finding food?", options: ['Sight', 'Smell', 'Taste', 'Touch'], correct: 1 },
+      { question: 'Where are polar bear cubs born?', options: ['In a snow den', 'In a tree', 'In the water', 'In tall grass'], correct: 0 },
+      { question: 'About how long do cubs stay with their mother?', options: ['A few days', 'About two years', 'Ten years', 'Forever'], correct: 1 },
+      { question: 'Polar bears are carnivores, which means they eat...?', options: ['Plants', 'Meat', 'Rocks', 'Ice only'], correct: 1 },
+      { question: 'What does a polar bear use to paddle through the water?', options: ['Its big front paws', 'A tail fin', 'Its ears', 'A shell'], correct: 0 },
+      { question: 'Which pole do polar bears live near?', options: ['The South Pole', 'The North Pole', 'Both', 'Neither'], correct: 1 },
+      { question: 'What lies under a polar bear’s fur to trap heat?', options: ['A thick layer of fat (blubber)', 'A metal plate', 'Feathers', 'Nothing'], correct: 0 },
+      { question: 'How do polar bears usually live?', options: ['In big herds', 'Mostly alone', 'In pairs only', 'In flocks'], correct: 1 },
+      { question: 'Why are polar bears such strong swimmers?', options: ['Big paddle-like paws and a streamlined shape', 'They have fins', 'They are very light', 'They float on air'], correct: 0 },
+      { question: 'What is a danger to polar bears as the world warms?', options: ['Too much snow', 'Less sea ice to hunt from', 'Too many seals', 'Bright sunshine'], correct: 1 },
+      { question: 'What is special about a polar bear’s nose?', options: ['It glows', 'It can smell prey far away and under the snow', 'It is just for show', 'It cannot smell'], correct: 1 },
+      { question: 'How does a polar bear cross open water between ice?', options: ['It swims', 'It flies', 'It builds a boat', 'It waits for it to freeze'], correct: 0 },
+      { question: 'Which is TRUE about a polar bear?', options: ['It has white-looking fur but black skin', 'It has white skin and black fur', 'It is a kind of penguin', 'It eats only plants'], correct: 0 },
+    ],
+  },
 };
 
 /**
@@ -267,6 +494,11 @@ export const REGIONS = {
     name: 'Savanna',
     badgeLabel: 'Savanna Badge',
   },
+  polar: {
+    id: 'polar',
+    name: 'Polar',
+    badgeLabel: 'Polar Badge',
+  },
 };
 
 // ---- Keepers --------------------------------------------------------------------
@@ -278,6 +510,14 @@ const KEEPER_UNIFORM = {
   shirt: '#a78a52', // safari khaki
   trousers: '#6b5836',
   cap: '#5e4f30',
+};
+
+// Polar keepers swap the safari khaki for a cold-weather parka so they read as dressed
+// for the snow; same sprite, different colours.
+const POLAR_UNIFORM = {
+  shirt: '#3a6ea5', // parka blue
+  trousers: '#2e3a4a',
+  cap: '#28455f',
 };
 
 export const KEEPERS = {
@@ -292,6 +532,18 @@ export const KEEPERS = {
     hair: '#1b1712',
     hairStyle: 'ponytail',
     ...KEEPER_UNIFORM,
+  },
+  penguin: {
+    skin: '#e3b48c',
+    hair: '#2a2018',
+    hairStyle: 'ponytail',
+    ...POLAR_UNIFORM,
+  },
+  'polar-bear': {
+    skin: '#9a6440',
+    hair: '#15110c',
+    hairStyle: 'short',
+    ...POLAR_UNIFORM,
   },
 };
 
@@ -334,6 +586,38 @@ export const ENCOUNTERS = {
       },
     ],
     note: 'Squirrel — caches food; forgotten stashes grow into trees.',
+  },
+  'snowy-owl': {
+    id: 'snowy-owl',
+    name: 'Snowy Owl',
+    dex: '006',
+    stats: 'Bird of prey · Arctic hunter · silent flight',
+    blurb: 'A ghost-white owl that hunts in silence over the snow.',
+    facts: [
+      'Snowy owls have <strong>thick feathers down to their toes</strong> to survive the Arctic cold.',
+      'They fly almost <strong>silently</strong>, so prey never hears them coming.',
+      'Unlike most owls, they often <strong>hunt by day</strong>.',
+      'They can <strong>turn their heads</strong> remarkably far around to look behind them.',
+    ],
+    setup: 'A Snowy Owl lands on a post, swivelling its head to watch you with huge yellow eyes.',
+    choices: [
+      {
+        label: 'Stay very still',
+        reply:
+          'Wise. Snowy owls fly almost <strong>silently</strong> and miss nothing — it studies you, then glides off without a sound.',
+      },
+      {
+        label: 'Wave hello',
+        reply:
+          'It tilts its head almost all the way around to keep watching you. Owls can <strong>turn their heads</strong> very far — handy when your eyes can’t move in their sockets.',
+      },
+      {
+        label: 'Whisper a hoot',
+        reply:
+          'It blinks, unimpressed. Snowy owls are quieter than most owls and often <strong>hunt by day</strong> across the open snow.',
+      },
+    ],
+    note: 'Snowy Owl — silent flight, hunts by day, turns its head remarkably far.',
   },
 };
 

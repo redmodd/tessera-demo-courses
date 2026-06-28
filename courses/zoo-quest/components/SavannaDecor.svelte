@@ -54,8 +54,8 @@
     </div>
   {/each}
 
-  <!-- Waste bin — col 22, row 23 -->
-  <div class="decor" style="left:{22 * tile}px; top:{23 * tile}px;">
+  <!-- Waste bin — col 19, row 22 (beside the benches; the old spot is now the south path) -->
+  <div class="decor" style="left:{19 * tile}px; top:{22 * tile}px;">
     <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}">
       <!-- handle -->
       <rect x="21" y="10" width="14" height="6" rx="3" fill="#4e5e4e"/>

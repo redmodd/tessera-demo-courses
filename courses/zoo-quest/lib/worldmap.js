@@ -165,26 +165,34 @@ const ENTRANCE = parseMap(`
 ################################
 `);
 
+// The plaza is deliberately *not* four-fold symmetric — that read as a grid, not a place.
+// A central gift-shop facade (W, door D→centre at r4,c15) overlooks a chamfered reflecting
+// pond, the main boulevard (row 10) splitting around it as a roundabout. The four tree
+// groves are each a different irregular shape at staggered offsets; the food carts cluster
+// — ice cream + snacks down the west path, drinks + souvenirs off the east — rather than
+// sitting one-per-quadrant. Benches, lamps, a bin, and planters (all 'B' props drawn by
+// PlazaDecor) scatter unevenly to give the square some life. Connector tiles, the door, the
+// pond ring, and every patron's home tile stay walkable (see lib/world.test.js invariants).
 const PLAZA = parseMap(`
 ################################
-#..............................#
+#.........B....................#
 #............WWWWW.............#
-#.....###....WWWWW.....###.....#
-#.....###....WWDWW.....###.....#
-#.....###....I.+.......###.....#
-#......B+......+.......+B......#
-#.......+......+.......+.......#
-#.......+..++++++++++..+.......#
-#.......+..++~~~~~~++..+.......#
+#....###.....WWWWW.......#.....#
+#.....##.....WWDWW........##...#
+#....##......I.+...............#
+#......B+....B.+.......+B..#...#
+#.......+...B..+.......+.......#
+#......B+..++++++++++..+.......#
+#...B...+..+++~~~~+++..+.......#
 >++++++++++++~~~~~~++++++++++++>
-#.......+..++~~~~~~++..+.......#
-#.......+..++~~~~~~++..+.......#
-#.......+..++++++++++..+.......#
-#......B+..............+B......#
-#.....###..............###.....#
-#.....###..............###.....#
-#.....###..............###.....#
-#..............................#
+#...BB.....++~~~~~~++..+.......#
+#..........+++~~~~+++..+.......#
+#..........++++++++++..+B......#
+#..................B...+.......#
+#....#....................#....#
+#....##..................##....#
+#....###..................#....#
+#....................B.........#
 ################################
 `);
 
@@ -216,10 +224,10 @@ const SAVANNA = parseMap(`
 #.....................+......K+FppppppF#
 #......##.............+.......+FppppppF#
 #......##..........BB+++BB....+FFFFFFFF#
+#..................BBB+BB..............#
 #...................BB+BB..............#
-#...................BBBBB..............#
-#......................................#
-########################################
+#.....................+................#
+######################>#################
 `);
 
 // The Discovery Center interior — a gallery room that auto-centres in the viewport. The
@@ -270,17 +278,73 @@ oooooooooEoooooooo
 ooooooooDooooooooo
 `);
 
+// The Polar region (40×26), reached through the savanna's east edge. Snow-themed: a
+// frozen lake in the middle, the penguin colony pen upper-right and the polar-bear den
+// lower-right (each fenced, with a keeper out front), the Polar Research Station building
+// upper-left (its door 'D' leads to the polar Discovery Center), a snowy encounter patch
+// ('g') west of the lake, and a hot-cocoa hut ('B', drawn by PolarDecor) bottom-left. The
+// north connector (a path down column 14) returns to the savanna — you arrive here by
+// walking south out of the savanna. Frosty colours come from .area-polar.
+const POLAR = parseMap(`
+##############>#########################
+#.............+........................#
+#....WWWWW....+........FFFFFFFF....##..#
+#....WWWWW....+........FppppppF........#
+#....WWDWW....+........FppppppF........#
+#.....I+......+........FppppppF........#
+#......+......+........FFFFFFFF........#
+#......+......+...........K............#
+#......+......+........................#
+#..#...+..gggg+........................#
+#......+..gggg+........................#
+#......+..gggg+.~~~~~..................#
+#......+......+~~~~~~~.................#
+#++++++++++++++~~~~~~~.................#
+#......+........~~~~~..................#
+#................~~~...................#
+#...#..................................#
+#..............................K.......#
+#...........................FFFFFFFF...#
+#...........................FppppppF...#
+#...........................FppppppF...#
+#......I....................FppppppF...#
+#......BB...................FFFFFFFF...#
+#...................#..................#
+#......................................#
+########################################
+`);
+
+// The Polar Discovery Center interior — same gallery shape as the savanna's, auto-centred
+// in the viewport. The south door (D) returns to the polar map. Twelve walk-up panels (X):
+// a penguin gallery on the left, a polar-bear gallery on the right. Styled by .area-polar-discovery.
+const POLAR_DISCOVERY = parseMap(`
+ooooooooooooooooo
+.................
+..X...X...X...X..
+.................
+..X...........X..
+.................
+..X...........X..
+.................
+.................
+..X...X...X...X..
+.................
+ooooooooDoooooooo
+`);
+
 export const WORLD = {
-  start: { map: 'discovery', r: 9, c: 8 },
+  start: { map: 'plaza', r: 10, c: 1 },
   maps: {
     entrance: ENTRANCE,
     plaza: PLAZA,
     savanna: SAVANNA,
     centre: CENTRE,
     discovery: DISCOVERY,
+    polar: POLAR,
+    'polar-discovery': POLAR_DISCOVERY,
   },
   // Interior maps auto-centre in the viewport and don't use edge connectors.
-  interiors: ['centre', 'discovery'],
+  interiors: ['centre', 'discovery', 'polar-discovery'],
   // Each connector links to a tile just *inside* the destination, so arriving never
   // lands you back on a connector (which would loop straight back).
   links: {
@@ -293,9 +357,15 @@ export const WORLD = {
     savanna: [
       { at: { r: 13, c: 0 }, to: 'plaza', entry: { r: 10, c: 30 } },
       { at: { r: 6, c: 8 }, to: 'discovery', entry: { r: 9, c: 8 } }, // Discovery Center door
+      { at: { r: 25, c: 22 }, to: 'polar', entry: { r: 1, c: 14 } }, // south edge → Polar (its north path)
     ],
     centre: [{ at: { r: 11, c: 8 }, to: 'plaza', entry: { r: 5, c: 15 } }],
     discovery: [{ at: { r: 11, c: 8 }, to: 'savanna', entry: { r: 7, c: 8 } }],
+    polar: [
+      { at: { r: 0, c: 14 }, to: 'savanna', entry: { r: 24, c: 22 } }, // north edge → Savanna (its south path)
+      { at: { r: 4, c: 7 }, to: 'polar-discovery', entry: { r: 9, c: 8 } }, // Research Station door
+    ],
+    'polar-discovery': [{ at: { r: 11, c: 8 }, to: 'polar', entry: { r: 5, c: 7 } }],
   },
   // Pens and their keepers. `bounds` is the 'p' interior (where animals wander);
   // `keeper` is the walkable tile out front; `count` is how many animals to spawn.
@@ -303,6 +373,10 @@ export const WORLD = {
     savanna: [
       { animal: 'lion', bounds: { r0: 18, r1: 20, c0: 32, c1: 37 }, keeper: { r: 19, c: 29 }, count: 5 },
       { animal: 'elephant', bounds: { r0: 3, r1: 5, c0: 24, c1: 29 }, keeper: { r: 8, c: 26 }, count: 4 },
+    ],
+    polar: [
+      { animal: 'penguin', bounds: { r0: 3, r1: 5, c0: 24, c1: 29 }, keeper: { r: 7, c: 26 }, count: 6 },
+      { animal: 'polar-bear', bounds: { r0: 19, r1: 21, c0: 29, c1: 34 }, keeper: { r: 17, c: 31 }, count: 2 },
     ],
   },
   // Buildings drawn on the overworld (roof + sign overlay). `bounds` is the full
@@ -314,6 +388,9 @@ export const WORLD = {
     ],
     savanna: [
       { label: 'Discovery Center', style: 'ranger', bounds: { r0: 4, r1: 6, c0: 6, c1: 10 }, door: { r: 6, c: 8 } },
+    ],
+    polar: [
+      { label: 'Research Station', style: 'ranger', bounds: { r0: 2, r1: 4, c0: 5, c1: 9 }, door: { r: 4, c: 7 } },
     ],
   },
   // Walk-up display stations inside interior rooms. Each station occupies `span` 'X' tiles
@@ -340,6 +417,24 @@ export const WORLD = {
       { animal: 'elephant', key: 'ears',  at: { r: 9, c: 10 } },
       { animal: 'elephant', key: 'size',  at: { r: 9, c: 14 } },
     ],
+    'polar-discovery': [
+      // Top row — penguin left, polar bear right
+      { animal: 'penguin',    key: 'colony', at: { r: 2, c: 2  } },
+      { animal: 'penguin',    key: 'diet',   at: { r: 2, c: 6  } },
+      { animal: 'polar-bear', key: 'arctic', at: { r: 2, c: 10 } },
+      { animal: 'polar-bear', key: 'diet',   at: { r: 2, c: 14 } },
+      // Left wall — penguin
+      { animal: 'penguin',    key: 'range',  at: { r: 4, c: 2  } },
+      { animal: 'penguin',    key: 'build',  at: { r: 6, c: 2  } },
+      // Right wall — polar bear
+      { animal: 'polar-bear', key: 'range',  at: { r: 4, c: 14 } },
+      { animal: 'polar-bear', key: 'coat',   at: { r: 6, c: 14 } },
+      // Bottom row — penguin left, polar bear right
+      { animal: 'penguin',    key: 'swim',   at: { r: 9, c: 2  } },
+      { animal: 'penguin',    key: 'size',   at: { r: 9, c: 6  } },
+      { animal: 'polar-bear', key: 'nose',   at: { r: 9, c: 10 } },
+      { animal: 'polar-bear', key: 'size',   at: { r: 9, c: 14 } },
+    ],
   },
   // Lawn/standing signs: bumping or clicking one opens an info modal with this title/body.
   signs: {
@@ -359,11 +454,18 @@ export const WORLD = {
       { at: { r: 17, c: 23 }, title: "Marco's Snack Shack",
         body: 'Samosas, roasted peanuts, and mango lemonade. Perfect for a hot savanna day!' },
     ],
+    polar: [
+      { at: { r: 5, c: 6 }, title: 'Polar Research Station',
+        body: 'Step inside to learn about the penguins and polar bears — then test yourself with the keepers.' },
+      { at: { r: 21, c: 7 }, title: 'Polar Snack Hut',
+        body: 'Hot cocoa, cinnamon buns, and maple toffee. Just the thing to warm up on the ice!' },
+    ],
   },
   // The pool of encounters that can appear in a map's tall grass. Each successful grass
   // roll picks one at random (see pickEncounter). One per map for now, but the array
   // lets a map host several findable animals later.
   encounters: {
     savanna: ['squirrel'],
+    polar: ['snowy-owl'],
   },
 };

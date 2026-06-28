@@ -102,3 +102,15 @@
   --ground-earth: #b08a55; /* door threshold */
   --path: #d8c7a6;
 }
+.board.area-polar {
+  --ground-field: #e4ebf1; /* snow field */
+  --tall-grass: #c0d3e4; /* snowy encounter patch — a bluer slush than the open snow */
+  --ground-earth: #c9d3dc; /* packed snow — keeper tile / connector */
+  --pen-floor: #d3dee7; /* snow/ice enclosure floor */
+  --path: #ccd7df; /* trodden snow path */
+  --mottle-hi: rgba(255, 255, 255, 0.4); /* bright snow sparkle */
+  --mottle-lo: rgba(96, 128, 158, 0.1); /* cool blue-grey hollow */
+  --zoo-hedge: #5d7d68; /* frosted evergreens (scenery #) */
+  --zoo-water: #a7c8e0; /* icy water */
+  --building-wall: #d2dce4; /* snow-dusted research-station walls */
+}
