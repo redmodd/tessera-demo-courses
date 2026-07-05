@@ -1,2 +1,3 @@
 minimumReleaseAgeExclude:
   - tessera-learn@0.4.0
+  - tessera-learn@0.4.1
