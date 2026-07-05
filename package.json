@@ -2,7 +2,7 @@
   "name": "tessera-demo-courses",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.5.2",
+  "packageManager": "pnpm@11.10.0",
   "scripts": {
     "new": "tessera new",
     "dev": "tessera dev",
