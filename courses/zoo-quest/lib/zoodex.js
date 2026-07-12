@@ -1,13 +1,7 @@
-// Zoo Quest content + the shared persistence store helpers.
-//
-// One `usePersistence('zoodex')` object is read/written by the layout, the overworld,
-// the animal pages, and the keeper page. Its shape:
+// The `usePersistence('zoodex')` store, shared by the layout, overworld, and keepers:
 //   { collected: string[], badges: string[], fieldNotes: string[],
 //     map: string|null, avatar: {x,y}|null }
-// Every writer goes through `updateStore` (below) so a single 'zoodex-change' event
-// keeps the always-mounted HUD in sync.
-
-// ---- Exhibit animals (the Zoodex cards) -----------------------------------------
+// Write it through `updateStore` so the always-mounted HUD gets its 'zoodex-change' event.
 
 export const ANIMALS = {
   lion: {
@@ -15,8 +9,8 @@ export const ANIMALS = {
     dex: '001',
     name: 'Lion',
     region: 'savanna',
-    wanderMs: 1100, // how often it takes a step in its pen
-    glideMs: 470, // how long each step's glide takes
+    wanderMs: 1100,
+    glideMs: 470,
     stats: 'Carnivore · lives in a pride · roar heard ~8 km',
     blurb: 'The only big cat that lives in a family group.',
     facts: [
@@ -25,9 +19,6 @@ export const ANIMALS = {
       'Males grow a <strong>mane</strong> and <strong>roar</strong> to mark their territory.',
       'They rest up to <strong>20 hours a day</strong> to save energy for the hunt.',
     ],
-    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
-    // of display showing different information. Between them they cover the themes the keeper
-    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
     // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
     exhibit: {
       displays: {
@@ -90,7 +81,6 @@ export const ANIMALS = {
         },
       },
     },
-    // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
       { question: 'What is a lion family group called?', options: ['A pack', 'A pride', 'A herd', 'A troop'], correct: 1 },
       { question: 'In a pride, who does most of the hunting?', options: ['The males', 'The cubs', 'The females', 'Nobody — they scavenge'], correct: 2 },
@@ -129,7 +119,7 @@ export const ANIMALS = {
     dex: '002',
     name: 'African Elephant',
     region: 'savanna',
-    wanderMs: 2200, // slower and heavier than the lions
+    wanderMs: 2200,
     glideMs: 900,
     stats: 'Herbivore · herd led by the oldest female · biggest on land',
     blurb: 'The biggest animal that walks the Earth.',
@@ -139,9 +129,6 @@ export const ANIMALS = {
       'Big <strong>ears flap like fans</strong> to cool down.',
       'Herds follow the oldest female, the <strong>matriarch</strong>, who remembers where water is.',
     ],
-    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
-    // of display showing different information. Between them they cover the themes the keeper
-    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
     // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
     exhibit: {
       displays: {
@@ -202,7 +189,6 @@ export const ANIMALS = {
         },
       },
     },
-    // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
       { question: 'What does an elephant use its trunk for?', options: ['Only drinking', 'Breathing, smelling, drinking and grabbing food', 'Only trumpeting', 'Only hearing'], correct: 1 },
       { question: 'Who leads an elephant herd?', options: ['The largest male', 'The youngest calf', 'The oldest female (the matriarch)', 'They take turns'], correct: 2 },
@@ -241,7 +227,7 @@ export const ANIMALS = {
     dex: '004',
     name: 'Penguin',
     region: 'polar',
-    wanderMs: 900, // quick, busy little waddles
+    wanderMs: 900,
     glideMs: 420,
     stats: 'Eats fish & krill · lives in the far South · a flightless bird',
     blurb: 'A bird that swims instead of flies.',
@@ -251,9 +237,6 @@ export const ANIMALS = {
       'Emperor penguin <strong>dads balance the egg on their feet</strong> through the winter.',
       'Black-and-white colouring is <strong>camouflage</strong> from above and below.',
     ],
-    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
-    // of display showing different information. Between them they cover the themes the keeper
-    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
     // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
     exhibit: {
       displays: {
@@ -316,7 +299,6 @@ export const ANIMALS = {
         },
       },
     },
-    // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
       { question: 'What kind of animal is a penguin?', options: ['A fish', 'A bird', 'A mammal', 'A reptile'], correct: 1 },
       { question: 'Can a penguin fly through the air?', options: ['Yes, very high', 'No — but it "flies" underwater', 'Only at night', 'Yes, like an eagle'], correct: 1 },
@@ -355,7 +337,7 @@ export const ANIMALS = {
     dex: '005',
     name: 'Polar Bear',
     region: 'polar',
-    wanderMs: 2000, // big, heavy, unhurried
+    wanderMs: 2000,
     glideMs: 850,
     stats: 'Carnivore · lives in the far North · biggest land hunter',
     blurb: 'White fur, black skin, master of the ice.',
@@ -365,9 +347,6 @@ export const ANIMALS = {
       '<strong>Huge paws</strong> act like snowshoes and paddles.',
       'It can <strong>smell a seal from over a kilometre</strong> away.',
     ],
-    // Walk-up displays in the Discovery Center — six themed stations, each a different kind
-    // of display showing different information. Between them they cover the themes the keeper
-    // quiz tests, so a player who reads the room can answer the keeper and earn the card.
     // `type` selects the on-map art (InteriorDecor) and the overlay layout (ExhibitOverlay).
     exhibit: {
       displays: {
@@ -429,7 +408,6 @@ export const ANIMALS = {
         },
       },
     },
-    // Keeper question bank — the keeper asks 10 random of these (all correct → card).
     quizBank: [
       { question: 'What is the largest land meat-eater on Earth?', options: ['The lion', 'The polar bear', 'The wolf', 'The tiger'], correct: 1 },
       { question: "What colour is a polar bear's skin under its fur?", options: ['White', 'Pink', 'Black', 'Grey'], correct: 2 },
@@ -465,12 +443,8 @@ export const ANIMALS = {
   },
 };
 
-/**
- * Pick `n` questions from `bank` at random (Fisher–Yates on indices). Each returned
- * item is the question plus `n`: its 1-based position in the original bank, so callers
- * can build a stable LMS interaction id that survives re-rolls. `n >= bank.length`
- * returns the whole bank (shuffled). `rng` is injectable for deterministic tests.
- */
+// Each drawn question carries `n`, its 1-based position in the bank, so an LMS interaction
+// id stays stable across re-rolls.
 export function drawQuestions(bank, n, rng = Math.random) {
   const idx = bank.map((_, i) => i);
   for (let i = idx.length - 1; i > 0; i--) {
@@ -480,13 +454,10 @@ export function drawQuestions(bank, n, rng = Math.random) {
   return idx.slice(0, n).map((i) => ({ ...bank[i], n: i + 1 }));
 }
 
-/** Animal ids belonging to a region, e.g. regionAnimals('savanna') → ['lion','elephant']. */
 export const regionAnimals = (regionId) =>
   Object.values(ANIMALS)
     .filter((a) => a.region === regionId)
     .map((a) => a.id);
-
-// ---- Regions (badges) -----------------------------------------------------------
 
 export const REGIONS = {
   savanna: {
@@ -501,21 +472,15 @@ export const REGIONS = {
   },
 };
 
-// ---- Keepers --------------------------------------------------------------------
-// Appearance per animal's keeper, fed to <Keeper>. Keepers all wear the same staff
-// uniform (safari khaki shirt/trousers/cap); they read as different people through
-// skin tone and hair style (gender presentation), not their clothing.
-
+// Keepers share one uniform and read as different people through skin tone and hair.
 const KEEPER_UNIFORM = {
-  shirt: '#a78a52', // safari khaki
+  shirt: '#a78a52',
   trousers: '#6b5836',
   cap: '#5e4f30',
 };
 
-// Polar keepers swap the safari khaki for a cold-weather parka so they read as dressed
-// for the snow; same sprite, different colours.
 const POLAR_UNIFORM = {
-  shirt: '#3a6ea5', // parka blue
+  shirt: '#3a6ea5',
   trousers: '#2e3a4a',
   cap: '#28455f',
 };
@@ -547,12 +512,8 @@ export const KEEPERS = {
   },
 };
 
-// ---- Path encounters (hidden Zoodex animals) ------------------------------------
-// Found by exploring grass, not by visiting a keeper. Completing the (no-wrong-answer)
-// interaction collects the animal into the Zoodex — it counts toward the Zoodex total
-// (TOTAL_ANIMALS) but, since it's not in ANIMALS, awards no region badge. Each entry
-// carries both the interaction (setup/choices/note) and Zoodex card fields (dex/stats/
-// facts/blurb) so the overlay can reveal a card on collection.
+// Hidden animals found in the grass. They count toward TOTAL_ANIMALS but, not being in
+// ANIMALS, award no region badge.
 
 export const ENCOUNTERS = {
   squirrel: {
@@ -621,24 +582,14 @@ export const ENCOUNTERS = {
   },
 };
 
-// Everything the player can actually collect: the keeper exhibits (ANIMALS) plus the
-// hidden grass animals (ENCOUNTERS). Derived so the HUD count (X / TOTAL_ANIMALS) and the
-// completion target stay correct as animals are added — completion fires once all are in.
 export const TOTAL_ANIMALS = Object.keys(ANIMALS).length + Object.keys(ENCOUNTERS).length;
 
-// The full collectable set as one dex-ordered list, for the Zoodex modal to iterate.
-// ANIMALS and ENCOUNTERS entries share the card fields (id/dex/name/stats/facts/
-// blurb), so every entry renders through <ZoodexCard>. Sorted by dex so the grid reads
-// #001, #002, #003…; its length equals TOTAL_ANIMALS.
 export const ALL_CARDS = [...Object.values(ANIMALS), ...Object.values(ENCOUNTERS)].sort(
   (a, b) => a.dex.localeCompare(b.dex),
 );
 
-// ---- Store helpers --------------------------------------------------------------
-
 const EVENT = 'zoodex-change';
 
-/** Read the store, with every field defaulted so callers never see `undefined`. */
 export function readStore(store) {
   const s = store.get() ?? {};
   return {
@@ -650,11 +601,6 @@ export function readStore(store) {
   };
 }
 
-/**
- * Apply an immutable update and persist it, then nudge the HUD. `fn` receives the
- * fully-defaulted current state and returns the next state.
- *   updateStore(store, s => ({ ...s, collected: [...s.collected, 'lion'] }))
- */
 export function updateStore(store, fn) {
   const next = fn(readStore(store));
   store.set(next);
@@ -664,7 +610,6 @@ export function updateStore(store, fn) {
   return next;
 }
 
-/** Subscribe to store changes (e.g. the HUD). Returns an unsubscribe function. */
 export function onStoreChange(handler) {
   if (typeof window === 'undefined') return () => {};
   window.addEventListener(EVENT, handler);
@@ -673,11 +618,7 @@ export function onStoreChange(handler) {
 
 const addUnique = (arr, id) => (arr.includes(id) ? arr : [...arr, id]);
 
-/**
- * Collect an animal's card (idempotent) and, if that completes its region — every
- * animal of the region now collected — award the region badge in the same write. This
- * one helper owns the "badge when the region is done" rule so callers don't repeat it.
- */
+// Collecting the last animal of a region awards its badge in the same write.
 export const collect = (store, animalId) =>
   updateStore(store, (s) => {
     const collected = addUnique(s.collected, animalId);
@@ -690,10 +631,8 @@ export const collect = (store, animalId) =>
     };
   });
 
-/** Add a region id to `badges` (idempotent). */
 export const earnBadge = (store, id) =>
   updateStore(store, (s) => ({ ...s, badges: addUnique(s.badges, id) }));
 
-/** Add an encounter id to `fieldNotes` (idempotent). */
 export const logFieldNote = (store, id) =>
   updateStore(store, (s) => ({ ...s, fieldNotes: addUnique(s.fieldNotes, id) }));

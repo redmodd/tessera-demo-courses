@@ -1,13 +1,6 @@
 <script>
-  // The Zoodex: a floating notebook button (bottom-right of the overworld) that opens a
-  // modal listing every collectable animal. Built on the native <dialog>, like
-  // EncounterOverlay — free focus trap, inert background, Escape-to-close.
-  //
-  // Read-only view over the 'zoodex' store: it shows whatever has been collected.
-  // ALL_CARDS is the full dex-ordered set (keeper exhibits + hidden grass animals);
-  // collected entries render as a clickable summary tile, uncollected ones as a
-  // silhouette the player hasn't found yet. Clicking a collected tile switches the
-  // modal to a detail screen (the full <ZoodexCard>) with a Back button.
+  // Read-only view over the 'zoodex' store: collected entries render as a clickable tile,
+  // uncollected ones as a silhouette.
   import { onMount } from 'svelte';
   import { usePersistence } from 'tessera-learn';
   import { readStore, onStoreChange, ALL_CARDS, TOTAL_ANIMALS } from '../lib/zoodex.js';
@@ -31,9 +24,7 @@
   function open() {
     phase = 'list';
     dlg.showModal();
-    // showModal() auto-focuses the first focusable child (the ✕ button), which then
-    // shows a focus ring as if tab-selected. Move focus to the dialog itself instead —
-    // still trapped and announced (aria-label), but no button looks selected on open.
+    // showModal() would auto-focus the ✕ button, which then looks tab-selected.
     dlg.focus();
   }
 

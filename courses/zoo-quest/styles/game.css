@@ -1,26 +1,22 @@
-/* Naturalistic zoo palette — earthy and warm, like a real park map. */
 :root {
-  --tessera-bg: #e8ddc7; /* warm sand */
-  --tessera-text: #3a3322; /* ink */
-  /* The default muted gray (#6b7280) is only 3.59:1 on our sand bg — it was tuned for
-     white. Darken it to a warm gray so built-in quiz/sorting captions pass AA (4.9:1). */
+  --tessera-bg: #e8ddc7;
+  --tessera-text: #3a3322;
+  /* The default #6b7280 is only 3.59:1 on our sand bg; this warm gray passes AA (4.9:1). */
   --tessera-text-light: #5e5648;
 
   --zoo-ink: #3a3322;
   --zoo-bark: #5a4634;
   --zoo-bark-text: #f3ead7;
-  --zoo-accent: #c2762f; /* terracotta — accent / UI only, never body text */
-  --zoo-accent-deep: #985c20; /* darker terracotta — 5.1:1 on white, for button fills */
-  --zoo-ground: #cdbb91; /* path / sand */
-  --zoo-grass: #9cae7a; /* sage walkable greenery */
-  --zoo-hedge: #6f8f5a; /* wall / scenery */
+  --zoo-accent: #c2762f; /* UI only, never body text */
+  --zoo-accent-deep: #985c20; /* 5.1:1 on white, for button fills */
+  --zoo-ground: #cdbb91;
+  --zoo-grass: #9cae7a;
+  --zoo-hedge: #6f8f5a;
   --zoo-water: #6ba8c9;
   --zoo-dialog: #fffaf0;
 }
 
-/* Shared base for every game modal (the Zoodex, plus the keeper/encounter/rival/patron
-   chats). All are native <dialog>s centered in the viewport; each component's scoped
-   styles add only its own deltas (max-width, padding, text-align, scrolling). */
+/* Shared base for every game modal; each component's scoped styles add only its deltas. */
 .zoo-modal {
   position: fixed;
   inset: 0;
@@ -36,16 +32,12 @@
 .zoo-modal::backdrop {
   background: rgba(58, 51, 34, 0.55);
 }
-/* Each modal is focused programmatically on open (tabindex="-1", never a tab stop) so
-   that no action button looks tab-selected. The dialog's own focus ring would be noise,
-   so suppress it. Buttons inside keep their :focus-visible rings for keyboard users. */
+/* Modals are focused programmatically on open; buttons inside keep their focus rings. */
 .zoo-modal:focus {
   outline: none;
 }
 
-/* Exit button for the conversation/quiz modals — top-right corner. DOM-last in each
-   dialog so it never steals the initial focus from the first action button. Closing
-   mid-conversation is allowed: it resolves the overlay without completing it. */
+/* DOM-last in each dialog, so it never steals initial focus from the first action button. */
 .zoo-modal-close {
   position: absolute;
   top: 0.6rem;
@@ -68,20 +60,18 @@
   outline-offset: 2px;
 }
 
-/* Per-area ground theming. The base values on .board are the Entrance look and act as
-   the fallback for any unthemed map; plaza/savanna override the tokens. The mottle
-   highlight/shadow are tokens too, so the savanna can warm them up. */
+/* Per-area ground theming; the base .board values are the Entrance look and the fallback. */
 .board {
-  --ground-field: #9cae7a; /* dominant walkable ground (`.`) */
-  --tall-grass: #7e9a5c; /* encounter grass (`g`) */
-  --ground-earth: #cdbb91; /* pen dirt / keeper tile / connector */
-  --pen-floor: #94a35d; /* irrigated grass floor inside animal enclosures */
-  --path: #cdbb91; /* groomed path — tan default */
+  --ground-field: #9cae7a;
+  --tall-grass: #7e9a5c;
+  --ground-earth: #cdbb91;
+  --pen-floor: #94a35d;
+  --path: #cdbb91;
   --mottle-hi: rgba(255, 255, 255, 0.07);
   --mottle-lo: rgba(44, 62, 26, 0.09);
-  --building-wall: #cdbfa0; /* visitor-centre walls (exterior + interior) */
-  --desk-fill: #a9763f; /* service-desk counter */
-  --shelf-fill: #7f9c6a; /* gift-shop shelving */
+  --building-wall: #cdbfa0;
+  --desk-fill: #a9763f;
+  --shelf-fill: #7f9c6a;
 }
 .board.area-plaza {
   --ground-field: #a6b683;
@@ -92,25 +82,25 @@
   --ground-field: #cabf78;
   --tall-grass: #b3a850;
   --ground-earth: #bb9d5c;
-  --path: #c4a45e; /* dusty dirt, browner than the golden grass */
+  --path: #c4a45e;
   --mottle-hi: rgba(255, 252, 235, 0.09);
   --mottle-lo: rgba(120, 96, 40, 0.1);
 }
 .board.area-centre {
-  --ground-field: #d8c7a6; /* indoor floor */
+  --ground-field: #d8c7a6;
   --tall-grass: #d8c7a6;
-  --ground-earth: #b08a55; /* door threshold */
+  --ground-earth: #b08a55;
   --path: #d8c7a6;
 }
 .board.area-polar {
-  --ground-field: #e4ebf1; /* snow field */
-  --tall-grass: #c0d3e4; /* snowy encounter patch — a bluer slush than the open snow */
-  --ground-earth: #c9d3dc; /* packed snow — keeper tile / connector */
-  --pen-floor: #d3dee7; /* snow/ice enclosure floor */
-  --path: #ccd7df; /* trodden snow path */
-  --mottle-hi: rgba(255, 255, 255, 0.4); /* bright snow sparkle */
-  --mottle-lo: rgba(96, 128, 158, 0.1); /* cool blue-grey hollow */
-  --zoo-hedge: #5d7d68; /* frosted evergreens (scenery #) */
-  --zoo-water: #a7c8e0; /* icy water */
-  --building-wall: #d2dce4; /* snow-dusted research-station walls */
+  --ground-field: #e4ebf1;
+  --tall-grass: #c0d3e4;
+  --ground-earth: #c9d3dc;
+  --pen-floor: #d3dee7;
+  --path: #ccd7df;
+  --mottle-hi: rgba(255, 255, 255, 0.4);
+  --mottle-lo: rgba(96, 128, 158, 0.1);
+  --zoo-hedge: #d2dee9; /* deeper than the open field, so the treeline still reads as a wall */
+  --zoo-water: #a7c8e0;
+  --building-wall: #d2dce4;
 }

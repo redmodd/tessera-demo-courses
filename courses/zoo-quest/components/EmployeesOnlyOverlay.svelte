@@ -1,8 +1,4 @@
 <script>
-  // The "staff only" door: a small focus-trapped <dialog> that says the area is for
-  // zoo staff and closes on OK / Escape / the ✕ — never a map transition. Mirrors the
-  // PatronOverlay open/focus/Enter pattern so the keyboard behaviour matches the other
-  // overlays. onResolve fires once however it closes, so the map can refocus the avatar.
   import { onMount } from 'svelte';
   import Icon from './Icon.svelte';
 

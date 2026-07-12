@@ -1,9 +1,4 @@
 <script>
-  // A friendly zoo patron. One quick line — a greeting or a "did you know" fact,
-  // chosen 50/50 by pickChatter — in a focus-trapped <dialog>, then Continue. No
-  // quiz and no LMS interaction; saying hello again shows a fresh line. The <dialog>
-  // gives us the focus trap, inert background, and Escape-to-close for free; however
-  // it closes, onResolve fires once so the map can return focus to the avatar.
   import { onMount } from 'svelte';
   import { pickChatter } from '../lib/people.js';
   import Patron from './Patron.svelte';
@@ -11,8 +6,7 @@
 
   let { patron, onResolve } = $props();
 
-  // A patron may carry its own dialog pool (e.g. the gift-shop shopkeeper and
-  // shopkeeper). Fall back to the shared savanna chatter when it doesn't.
+  // A patron may carry its own line pool; fall back to the shared chatter.
   const line = patron.lines
     ? patron.lines[Math.floor(Math.random() * patron.lines.length)]
     : pickChatter();
@@ -20,9 +14,7 @@
   let dlg;
   let primaryBtn = $state(null);
 
-  // Focus the dialog (not the Continue button) on open, so nothing looks tab-selected;
-  // the dialog is tabindex="-1" so it's never a tab stop. Enter still advances via the
-  // keydown handler below, which clicks whichever button is the current primary.
+  // Focus the dialog, not the button, so nothing looks tab-selected; Enter still advances.
   onMount(() => {
     dlg.showModal();
     dlg.focus();

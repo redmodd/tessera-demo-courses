@@ -1,9 +1,6 @@
 <script>
-  // The non-spatial path through the spatial game (WCAG): a native disclosure that
-  // lists the region's keepers. Keyboard and screen-reader users open a keeper here
-  // instead of walking the grid to it. `items` is [{ slug, label, kind, done }] where
-  // `kind` is an <Animal> kind; `done` shows a collected tick. `onSelect(slug)` opens
-  // that keeper's overlay.
+  // The non-spatial path through the spatial game (WCAG): keyboard and screen-reader users
+  // open a keeper here instead of walking the grid to it.
   import Animal from './Animal.svelte';
   import Icon from './Icon.svelte';
 

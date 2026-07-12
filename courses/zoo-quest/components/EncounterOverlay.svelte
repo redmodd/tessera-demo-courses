@@ -1,13 +1,6 @@
 <script>
-  // A path encounter: a focus-trapped modal with no-wrong-answer branches. Built on
-  // the native <dialog> element, which gives us the focus trap, an inert background,
-  // and Escape-to-close for free (axe-friendly, real focus order). showModal() also
-  // autofocuses the first branch button.
-  //
-  // These are the hidden Zoodex animals: choosing a branch completes the interaction,
-  // which collects the animal (mirrors the keeper flow's card reveal). Collection happens
-  // on completion — not on close — so fleeing (Escape) before choosing earns nothing and
-  // leaves the animal findable again. `onResolve` fires once on close to return focus.
+  // Collection happens on completing a branch, not on close, so fleeing (Escape) earns
+  // nothing and leaves the animal findable again.
   import { onMount } from 'svelte';
   import { usePersistence } from 'tessera-learn';
   import { collect, readStore } from '../lib/zoodex.js';
@@ -18,9 +11,8 @@
   let { encounter, onResolve } = $props();
 
   const store = usePersistence('zoodex');
-  // Whether this animal is already in the Zoodex when the encounter opens. Grass
-  // encounters repeat, so on a re-find we celebrate the sighting instead of falsely
-  // announcing a new card. Captured once, before collect() runs on reveal.
+  // Captured before collect() runs: encounters repeat, so a re-find celebrates the sighting
+  // rather than announcing a new card.
   const alreadyHad = readStore(store).collected.includes(encounter.id);
 
   let dlg;
@@ -28,10 +20,7 @@
   let chosen = $state(null); // index of the picked branch, or null before choosing
   let phase = $state('choose'); // 'choose' | 'reply' | 'card'
 
-  // Focus the dialog (not a button) on open so nothing looks tab-selected; the dialog is
-  // tabindex="-1" so it's never a tab stop. Enter advances via onKeydown, which clicks the
-  // current primary button. After each transition we refocus the dialog so Enter keeps
-  // working and the just-clicked button doesn't keep a ring.
+  // Focus the dialog, not a button, so nothing looks tab-selected and Enter keeps working.
   onMount(() => {
     dlg.showModal();
     dlg.focus();

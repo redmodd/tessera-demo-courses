@@ -1,16 +1,6 @@
 <script>
-  // A walk-up display in the Discovery Center: a focus-trapped <dialog> that teaches one
-  // theme about one savanna animal. Purely informational — no quiz, no collection, no
-  // persistence; it just reveals the facts the keepers quiz on, so a player who reads the
-  // room can earn the card. The `display` (from ANIMALS[animal].exhibit.displays[key])
-  // carries the `type`, which picks the layout:
-  //   poster / diet / specimen / map → an intro line + a short fact list (with type trimmings
-  //                                    like a specimen caption or a range region).
-  //   size                          → the same fact layout, framed as a comparison.
-  //   touchscreen                   → a question with a "Reveal answer" button (interactive).
-  // Mirrors SignOverlay's open/focus/Enter/close pattern (onResolve fires once on close so
-  // the map can refocus the avatar). Facts/answers are author-authored constants — rendered
-  // with {@html} for their inline <strong> emphasis, never user input.
+  // `display.type` picks the layout: touchscreen is a question with a reveal button, the
+  // rest are an intro line + fact list. Facts are authored constants, hence {@html}.
   import { onMount } from 'svelte';
   import Animal from './Animal.svelte';
 

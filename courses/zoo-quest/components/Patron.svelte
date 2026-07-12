@@ -1,7 +1,4 @@
 <script>
-  // A zoo visitor (patron), front-facing, same flat style as the Explorer/Keeper but
-  // in casual clothes. Heavily parametrized so each patron — and the bespectacled,
-  // bowler-hatted rival — reads as a different person. Gentle idle bob.
   let {
     skin = '#d9a577',
     hair = '#3a2a1a',

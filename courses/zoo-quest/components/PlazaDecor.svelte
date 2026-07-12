@@ -1,19 +1,12 @@
 <script>
-  // Decorative overlay for the plaza overworld. Two groups of 'B' props, both drawn above
-  // tile cells (z-index 1) but below character sprites (z-index 2):
-  //   • Vendor carts — ice cream + snack stall down the west path, drinks + souvenir off
-  //     the east. Each has a tending patron beside it (see PEOPLE.plaza in lib/people.js).
-  //   • Street furniture — benches, lamp posts, a bin, and flower planters, scattered
-  //     unevenly to break the square's symmetry.
-  // Every coordinate here MUST match a 'B' tile in worldmap.js, or the sprite floats over a
-  // walkable cell while an invisible blocker sits elsewhere.
-
+  // Every coordinate below must match a 'B' tile in worldmap.js, or the sprite floats over
+  // a walkable cell while an invisible blocker sits elsewhere.
   let { tile } = $props();
 </script>
 
 {#snippet iceCreamCart()}
   <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}" aria-hidden="true">
-    <!-- umbrella canopy: pale blue + white stripes -->
+    <!-- canopy -->
     <polygon points="5,24 51,24 45,9 11,9" fill="#7ac8e8"/>
     <polygon points="11,24 17,24 14,9  9,9"  fill="rgba(255,255,255,0.48)"/>
     <polygon points="22,24 28,24 25,9 20,9"  fill="rgba(255,255,255,0.48)"/>
@@ -72,7 +65,7 @@
 
 {#snippet drinksCart()}
   <svg width={tile} height={tile} viewBox="0 0 {tile} {tile}" aria-hidden="true">
-    <!-- umbrella canopy: green + white stripes -->
+    <!-- canopy -->
     <polygon points="5,24 51,24 45,9 11,9" fill="#4a9a50"/>
     <polygon points="11,24 17,24 14,9  9,9"  fill="rgba(255,255,255,0.45)"/>
     <polygon points="22,24 28,24 25,9 20,9"  fill="rgba(255,255,255,0.45)"/>
@@ -117,7 +110,7 @@
     <rect x="6"  y="23" width="44" height="15" rx="2" fill="#c0a8d8"/>
     <!-- counter surface -->
     <rect x="4"  y="29" width="48" height="7"  rx="2" fill="#d8c8f0"/>
-    <!-- items on counter: plush lion, keychain, snow globe -->
+    <!-- plush lion, keychain, snow globe -->
     <circle cx="14" cy="27" r="5"   fill="#e0a030"/>
     <circle cx="14" cy="24" r="3.5" fill="#e8b840"/>
     <circle cx="28" cy="28" r="3"   fill="#60b8d8"/>
@@ -155,7 +148,7 @@
     <!-- pole + base -->
     <rect x="26" y="15" width="4" height="35" rx="1.5" fill="#3a3a44"/>
     <rect x="22" y="48" width="12" height="4" rx="1" fill="#2e2e38"/>
-    <!-- glow + lantern -->
+    <!-- lantern -->
     <circle cx="28" cy="12" r="8" fill="#fff2b0" opacity="0.55"/>
     <rect x="24" y="8" width="8" height="10" rx="2" fill="#f4d24a"/>
     <rect x="23" y="5" width="10" height="3.5" rx="1" fill="#3a3a44"/>
@@ -198,43 +191,31 @@
 
 <div class="plaza-decor" aria-hidden="true">
 
-  <!-- Vendor carts (coords match the 'B' tiles in worldmap.js; patrons tend each) -->
-
-  <!-- Ice cream cart — row 6, col 7 (Lena) -->
   <div class="decor" style="left:{7 * tile}px; top:{6 * tile}px;">
     {@render iceCreamCart()}
   </div>
 
-  <!-- Snack stall — row 8, col 7 (Jen) — clustered below the ice cream cart on the west path -->
   <div class="decor" style="left:{7 * tile}px; top:{8 * tile}px;">
     {@render snackStall()}
   </div>
 
-  <!-- Drinks cart — row 6, col 24 (Rosa) -->
   <div class="decor" style="left:{24 * tile}px; top:{6 * tile}px;">
     {@render drinksCart()}
   </div>
 
-  <!-- Souvenir cart — row 13, col 24 (Ed) -->
   <div class="decor" style="left:{24 * tile}px; top:{13 * tile}px;">
     {@render souvenirCart()}
   </div>
 
-  <!-- Street furniture — scattered unevenly to break the square's symmetry -->
-
-  <!-- Benches: a seating nook by the west entrance + one in front of the shop -->
   <div class="decor" style="left:{4 * tile}px; top:{9 * tile}px;">{@render bench()}</div>
   <div class="decor" style="left:{4 * tile}px; top:{11 * tile}px;">{@render bench()}</div>
   <div class="decor" style="left:{13 * tile}px; top:{6 * tile}px;">{@render bench()}</div>
 
-  <!-- Lamp posts flanking the pond, off-axis -->
   <div class="decor" style="left:{12 * tile}px; top:{7 * tile}px;">{@render lampPost()}</div>
   <div class="decor" style="left:{19 * tile}px; top:{14 * tile}px;">{@render lampPost()}</div>
 
-  <!-- Bin beside the lower west bench, by the food carts -->
   <div class="decor" style="left:{5 * tile}px; top:{11 * tile}px;">{@render bin()}</div>
 
-  <!-- Flower planters, diagonally placed -->
   <div class="decor" style="left:{10 * tile}px; top:{1 * tile}px;">{@render planter()}</div>
   <div class="decor" style="left:{21 * tile}px; top:{18 * tile}px;">{@render planter()}</div>
 

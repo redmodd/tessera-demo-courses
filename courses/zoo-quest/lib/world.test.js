@@ -3,9 +3,8 @@ import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, e
 import { bfs } from './engine.js';
 import { ANIMALS } from './zoodex.js';
 
-// These guard the hand-authored map data — the kind of mistake (a connector on a
-// wall, an entry that drops you in the void, a keeper sealed behind scenery, a pen
-// that leaks onto the path) that a string grid makes easy to introduce.
+// These guard the hand-authored map data: a connector on a wall, an entry that drops you in
+// the void, a keeper sealed behind scenery — the mistakes a string grid makes easy.
 describe('WORLD data invariants', () => {
   test('every overworld map is at least the base explorable size', () => {
     for (const [id, m] of Object.entries(WORLD.maps)) {
@@ -229,10 +228,8 @@ describe('WORLD data invariants', () => {
   });
 
   test('interior rooms have no blocked wall tiles — the slim wall is a line on the floor edge', () => {
-    // Interiors are enclosed by void ('o') / the board edge, and the wall reads as a thin
-    // band drawn on the outermost *floor* tile (see wallEdge in overworld.svelte). A
-    // blocked 'W' tile would render as plank floor with that band, so it looks walkable but
-    // isn't — the trap that left the player blocked one tile short of the visible wall.
+    // A blocked 'W' tile would render as plank floor with a wall band (see wallEdge), so it
+    // looks walkable but isn't — the trap that blocked the player a tile short of the wall.
     for (const id of WORLD.interiors) {
       const { grid } = WORLD.maps[id];
       grid.forEach((row, r) =>
@@ -246,7 +243,6 @@ describe('WORLD data invariants', () => {
   });
 
   test('an interior floor tile beside the void boundary is walkable — you reach the wall line', () => {
-    // The former wall ring is now floor: the player can walk right up to the void edge.
     for (const id of WORLD.interiors) {
       const { grid } = WORLD.maps[id];
       const edgeFloor = [];

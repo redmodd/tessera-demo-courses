@@ -1,11 +1,6 @@
 <script>
-  // The keeper standing in front of an enclosure. A focus-trapped <dialog> (focus
-  // trap, inert background, Escape-to-close come for free) that quizzes the learner on
-  // the animal, then — once every question is right — reveals the exhibit card and
-  // adds it to the Zoodex. Each question goes through useQuestion(graded:false): the
-  // answer is reported to the LMS as an interaction, but stays out of the gradebook
-  // (so manual completion mode doesn't warn). Revisiting a collected keeper skips the
-  // quiz and just shows the card.
+  // Each question is useQuestion(graded:false): reported to the LMS as an interaction, but
+  // out of the gradebook, so manual completion mode doesn't warn.
   import { onMount } from 'svelte';
   import { useQuestion, usePersistence } from 'tessera-learn';
   import { collect, drawQuestions, KEEPERS } from '../lib/zoodex.js';
@@ -16,8 +11,7 @@
   let { animal, collected = false, onResolve } = $props();
 
   const store = usePersistence('zoodex');
-  // Draw 10 random questions from this animal's 30-question bank. Computed once: the
-  // overlay is re-created on each open, so leaving and returning re-rolls a fresh 10.
+  // Computed once; the overlay is re-created per open, so returning re-rolls a fresh 10.
   const questions = drawQuestions(animal.quizBank, 10);
 
   let dlg;
@@ -26,7 +20,6 @@
   let feedback = $state(null); // null | 'wrong' | 'correct'
   let picks = $state(questions.map(() => null)); // selected option index per question
 
-  // One standalone question per quiz item, reported as an LMS interaction on submit.
   const handles = questions.map((q, i) =>
     useQuestion({
       id: `keeper-${animal.id}-q${q.n}`,
@@ -45,10 +38,8 @@
 
   let primaryBtn = $state(null); // the "Next"/Continue button when shown; else null
 
-  // Focus the dialog (not a button) on open so nothing looks tab-selected; tabindex="-1"
-  // keeps it out of the tab order. Enter advances via onKeydown (clicks the current
-  // primary). On a correct answer / page change we refocus the dialog so Enter keeps
-  // working; a wrong answer leaves focus on the choices so they can pick again.
+  // Focus the dialog, not a button, so nothing looks tab-selected and Enter keeps working.
+  // A wrong answer leaves focus on the choices so they can pick again.
   onMount(() => {
     dlg.showModal();
     dlg.focus();

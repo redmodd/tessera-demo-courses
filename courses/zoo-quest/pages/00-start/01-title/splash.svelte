@@ -7,7 +7,6 @@
   import Animal from '../../../components/Animal.svelte';
   const nav = useNavigation();
 
-  // The collectable cast, looped for liveliness (alternating facing).
   const cast = ['lion', 'elephant', 'squirrel', 'lion', 'elephant', 'squirrel'];
 </script>
 

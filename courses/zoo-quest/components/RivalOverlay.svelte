@@ -1,30 +1,19 @@
 <script>
-  // Professor Quibble, the know-it-all rival. He boasts (intro), then quizzes the
-  // learner one question at a time — no retries. The moment a choice is picked it
-  // locks and earns a smug per-question jab: grudging on a right answer, gloating on a
-  // wrong one. After the last question he reacts to the whole run — a sour "win" line
-  // if every answer was right, a smug "lose" line otherwise. Bragging rights only:
-  // nothing is awarded or persisted, so interacting again starts a fresh challenge.
-  // Each pick is reported as an ungraded LMS interaction, mirroring KeeperOverlay, so
-  // it shows up in cmi.interactions but stays out of the gradebook.
+  // Bragging rights only: nothing is awarded, and each pick is an ungraded LMS interaction.
   import { onMount } from 'svelte';
   import { useQuestion } from 'tessera-learn';
   import { gradeRival, pickSmug } from '../lib/people.js';
   import Patron from './Patron.svelte';
 
-  // `faced` is the player's past outcome with this rival ('won' | 'lost'), or null if
-  // they've never finished a challenge. When set, we skip the quiz entirely and show a
-  // single smug remark — no questions, no LMS interactions. `onComplete(outcome)` fires
-  // once, the moment a fresh run reaches its result, so the parent can persist it.
+  // `faced` is the past outcome ('won' | 'lost') or null. When set, we skip the quiz and
+  // show a smug remark. `onComplete(outcome)` fires once, when a fresh run reaches its result.
   let { patron, onResolve, faced = null, onComplete } = $props();
 
   const questions = patron.quiz;
   const reactions = patron.reactions;
 
-  // Snapshot the outcome once at mount. `faced` is a "as of when you opened him" fact —
-  // it must NOT change during this overlay's life. Reading it live would let a fresh
-  // run's own onComplete (which records the outcome) flip the open result screen into
-  // the smug view, blanking the reaction. Capture here; the next open reads the update.
+  // Snapshot at mount: read live, a fresh run's own onComplete would flip the open result
+  // screen into the smug view.
   const wasFaced = faced;
   const smugLine = wasFaced ? pickSmug(patron, wasFaced) : null;
 
@@ -34,8 +23,6 @@
   let revealed = $state(false); // current question answered + locked?
   let picks = $state(questions.map(() => null)); // chosen option index per question
 
-  // One ungraded standalone question per quiz item, reported on pick (like the keeper).
-  // Skipped entirely once faced — a smug brush-off reports nothing.
   const handles = wasFaced
     ? []
     : questions.map((q, i) =>
@@ -58,10 +45,7 @@
 
   let primaryBtn = $state(null); // current Continue/advance button; null mid-question
 
-  // Focus the dialog (not a button) on open so nothing looks tab-selected; tabindex="-1"
-  // keeps it out of the tab order. Enter advances via onKeydown (clicks the current
-  // primary). Refocus the dialog after each transition so Enter keeps working and the
-  // just-clicked button doesn't keep a ring.
+  // Focus the dialog, not a button, so nothing looks tab-selected and Enter keeps working.
   onMount(() => {
     dlg.showModal();
     dlg.focus();

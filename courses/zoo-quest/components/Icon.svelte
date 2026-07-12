@@ -1,8 +1,4 @@
 <script>
-  // Flat inline-SVG replacements for the UI emoji the course used to render (party,
-  // badge, map, gamepad, door, leaf, notebook, tree). Decorative by default
-  // (aria-hidden) — callers that need a label pass their own text alongside. `size`
-  // controls the box (defaults to 1em so icons inherit the surrounding font size).
   let { name, size = '1em' } = $props();
 </script>
 
@@ -42,14 +38,23 @@
     <rect x="7" y="5" width="10" height="14" rx="1" fill="#b97a45" />
     <circle cx="15" cy="12" r="1" fill="#f5d65b" />
   {:else if name === 'leaf'}
-    <path d="M12 21V9" stroke="#5f7a3e" stroke-width="1.5" stroke-linecap="round" />
-    <path d="M12 13C8 13 5 10 5 7c4 0 7 3 7 6z" fill="#6f8c49" />
-    <path d="M12 17c4 0 7-3 7-6-4 0-7 3-7 6z" fill="#7d9a55" />
+    <!-- currentColor, so .cell.grass .glyph can tint it per area -->
+    <path d="M12 21V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+    <path d="M12 13C8 13 5 10 5 7c4 0 7 3 7 6z" fill="currentColor" opacity="0.85" />
+    <path d="M12 17c4 0 7-3 7-6-4 0-7 3-7 6z" fill="currentColor" opacity="0.7" />
   {:else if name === 'notebook'}
     <rect x="5" y="3" width="14" height="18" rx="1.5" fill="#3a7d57" />
     <rect x="6.5" y="3" width="1.8" height="18" fill="#2c5e41" />
     <rect x="15" y="3" width="1.6" height="18" fill="#d9a441" />
     <path d="M10 8h3.5M10 11h3.5" stroke="#e8f0e8" stroke-width="1" stroke-linecap="round" />
+  {:else if name === 'tree-snow'}
+    <rect x="10.9" y="17" width="2.2" height="5" rx="0.7" fill="#6b4a30" />
+    <polygon points="12,10.5 19,19 5,19" fill="#35604a" />
+    <polygon points="12,10.5 16,15 8,15" fill="#f2f7fb" />
+    <polygon points="12,6 17.2,14.5 6.8,14.5" fill="#3d6d55" />
+    <polygon points="12,6 15,10.6 9,10.6" fill="#f2f7fb" />
+    <polygon points="12,2 15.6,10 8.4,10" fill="#35604a" />
+    <polygon points="12,2 14,6.2 10,6.2" fill="#fbfdfe" />
   {:else if name === 'tree'}
     <rect x="10.7" y="16" width="2.6" height="6" rx="0.8" fill="#7a5230" />
     <circle cx="12" cy="8" r="5" fill="#4f7a3e" />

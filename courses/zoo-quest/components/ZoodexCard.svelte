@@ -1,7 +1,5 @@
 <script>
-  // A single Zoodex exhibit card. Presentational — `animal` is an entry from
-  // ANIMALS in lib/zoodex.js. Facts may contain inline <strong> emphasis, so they
-  // render with {@html}; they are author-authored constants, never user input.
+  // Facts carry inline <strong> emphasis, hence {@html}; they are authored constants.
   import Animal from './Animal.svelte';
 
   let { animal } = $props();

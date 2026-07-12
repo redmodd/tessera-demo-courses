@@ -1,14 +1,8 @@
 <script>
-  // The gift-shop lawn sign: a small focus-trapped <dialog> that names the building
-  // and invites the player in, closing on OK / Escape / the ✕ — never a map transition.
-  // Mirrors EmployeesOnlyOverlay's open/focus/Enter pattern so the keyboard behaviour
-  // matches the other overlays. onResolve fires once however it closes, so the map can
-  // refocus the avatar.
   import { onMount } from 'svelte';
   import Icon from './Icon.svelte';
 
-  // `title`/`body` default to the gift-shop copy, so a bare <SignOverlay> is unchanged;
-  // WORLD.signs supplies per-sign text (savanna Discovery Center, etc.).
+  // WORLD.signs supplies per-sign text; the defaults are the gift-shop copy.
   let {
     onResolve,
     title = 'Gift Shop',

@@ -7,8 +7,6 @@ export default {
     fontFamily: 'Inter, system-ui, sans-serif',
   },
   navigation: { mode: 'free' },
-  // Prototype: completion isn't wired yet (no Zoodex), so manual mode just prints a
-  // harmless "completion never fired" dev warning after 60s. Faithful to the plan.
   completion: { mode: 'manual' },
   scoring: { passingScore: 70 },
   export: { standard: 'web' },

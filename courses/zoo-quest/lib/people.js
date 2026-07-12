@@ -1,8 +1,4 @@
-// Zoo patrons that populate a region's map: friendly visitors who greet you or share a
-// "did you know" fact, plus one adversarial know-it-all who quizzes you. Appearance is
-// fed to <Patron>; `home` is the tile they start on; `roam: true` ones wander nearby.
-
-// Shared small-talk for friendly patrons. Each interaction shows one, picked at random.
+// `home` is the tile a patron starts on; `roam: true` ones wander nearby.
 export const CHATTER = {
   greetings: [
     'Lovely day at the zoo, isn’t it?',
@@ -21,16 +17,11 @@ export const CHATTER = {
   ],
 };
 
-/** A random greeting or "did you know" fact (50/50). */
 export function pickChatter(rng = Math.random) {
   const pool = rng() < 0.5 ? CHATTER.greetings : CHATTER.facts;
   return pool[Math.floor(rng() * pool.length)];
 }
 
-/**
- * A random smug remark for a faced rival, from the pool matching the past outcome
- * ('won' → grudging/dismissive, anything else → gloating).
- */
 export function pickSmug(rival, outcome, rng = Math.random) {
   const pool = outcome === 'won' ? rival.smug.won : rival.smug.lost;
   return pool[Math.floor(rng() * pool.length)];
@@ -38,8 +29,6 @@ export function pickSmug(rival, outcome, rng = Math.random) {
 
 export const PEOPLE = {
   entrance: [
-    // Upper ticket booth — B tiles at cols 27-28, rows 6-9. Seller stands at col 26;
-    // queue extends left toward the path.
     {
       id: 'tara',
       kind: 'friendly',
@@ -78,7 +67,6 @@ export const PEOPLE = {
       roam: false,
       look: { skin: '#b06840', hair: '#1a150f', hairStyle: 'ponytail', shirt: '#9a5ab4', trousers: '#3a3040' },
     },
-    // Lower ticket booth — B tiles at cols 27-28, rows 11-14.
     {
       id: 'benny',
       kind: 'friendly',
@@ -117,7 +105,6 @@ export const PEOPLE = {
       roam: false,
       look: { skin: '#7a4a28', hair: '#100c08', hairStyle: 'short', shirt: '#3a6a4a', trousers: '#3a3a4a' },
     },
-    // Roaming visitors — wander the open ground between parking and stream.
     {
       id: 'kim',
       kind: 'friendly',
@@ -391,8 +378,7 @@ export const PEOPLE = {
         win: '…Impossible. You answered every one. Hmph — perhaps you’re not entirely hopeless.',
         lose: 'Just as I thought. Come back when you’ve actually studied, novice!',
       },
-      // Shown on any interaction AFTER a completed challenge — no re-quiz. Picked at
-      // random from the pool matching how the player did. See pickSmug.
+      // Shown on any interaction after a completed challenge — no re-quiz. See pickSmug.
       smug: {
         won: [
           'Back already? You won fair and square — once. I shan’t embarrass myself again.',
@@ -425,10 +411,7 @@ export const PEOPLE = {
     },
   ],
 
-  // The Discovery Center greeter: a friendly keeper standing in the middle of the room who
-  // welcomes the player and points them at the exhibits. Stationary so they stay centred.
-  // `sprite: 'keeper'` draws them with the Keeper sprite (peaked cap + uniform) instead of
-  // the default Patron civilian look; the `look` fields are the Keeper component's props.
+  // `sprite: 'keeper'` draws them with the Keeper sprite; `look` then takes Keeper's props.
   discovery: [
     {
       id: 'iris',
@@ -448,6 +431,23 @@ export const PEOPLE = {
   ],
 
   polar: [
+    {
+      id: 'aleksy',
+      kind: 'friendly',
+      name: 'Dr. Aleksy',
+      // c20, not c19: the tent canvas rises above its own tiles and sprites draw over decor,
+      // so standing him there put him on the roof.
+      home: { r: 19, c: 20 },
+      roam: false,
+      sprite: 'keeper',
+      look: { skin: '#d9b48f', hair: '#4a4038', hairStyle: 'short', shirt: '#2f5f8a', trousers: '#33414f', cap: '#24455f' },
+      lines: [
+        'This tent is our field camp. We watch the weather from here — and the ice itself tells us the rest.',
+        'That mast with the spinning cups measures the wind and the cold, day and night, even when nobody is out here.',
+        'We drill cores of ice, like a straw in a cake. Each layer froze in a different year, so the ice remembers hundreds of winters.',
+        'Everything we learn out here ends up on the displays in the Research Station, up the path to the north. Go and have a look!',
+      ],
+    },
     {
       id: 'nina',
       kind: 'friendly',
@@ -484,7 +484,9 @@ export const PEOPLE = {
       id: 'vendor-polar',
       kind: 'friendly',
       name: 'Pia',
-      home: { r: 23, c: 7 },
+      // She stands on the serving side of the hut, so walking down the west path bumps her.
+      // There is no sign here — her lines are the hut's introduction.
+      home: { r: 21, c: 7 },
       roam: false,
       look: { skin: '#d49a6a', hair: '#3a2418', hairStyle: 'ponytail', shirt: '#c0392b', trousers: '#3a3a4a', hat: 'cap' },
       lines: [
@@ -570,11 +572,7 @@ export const PEOPLE = {
   ],
 };
 
-/**
- * Grade a rival challenge. `picks[i]` is the chosen 0-based option index for
- * question `i`, or null/undefined if unanswered. The rival is only beaten when every
- * question was answered correctly — there are no retries, so a single miss loses.
- */
+// The rival is beaten only on a clean sweep; `picks[i]` is null/undefined if unanswered.
 export function gradeRival(picks, quiz) {
   let answered = 0;
   let correctCount = 0;

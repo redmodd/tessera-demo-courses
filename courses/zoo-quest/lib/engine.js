@@ -1,10 +1,9 @@
 import { walkable } from './worldmap.js';
 
 /**
- * Board offset (in whole pixels) that frames the map in the viewport: centre a map
- * smaller than the window, otherwise keep the avatar centred and clamp so the map edge
- * never pulls inside the viewport. Rounded to an integer px — a fractional translate
- * lands the tile grid off the pixel grid and renders hairline seams between tiles.
+ * Board offset that frames the map in the viewport: centre a map smaller than the window,
+ * otherwise follow the avatar and clamp at the edges. Rounded to whole px — a fractional
+ * translate lands the tile grid off the pixel grid and renders hairline seams.
  */
 export function camOffset(centerPx, contentPx, winPx) {
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -23,10 +22,8 @@ const DIRS = [
 ];
 
 /**
- * Breadth-first shortest path over walkable tiles, 4-connected (no diagonals).
- * Returns the list of steps from `start` to `goal` — excluding `start`, including
- * `goal`. Empty array when already at the goal. `null` when the goal is unreachable
- * or not itself walkable. Pure: depends only on the grid.
+ * Shortest path over walkable tiles, 4-connected. Steps exclude `start` and include `goal`;
+ * empty when already there, null when the goal is unreachable or not walkable.
  */
 export function bfs(grid, start, goal) {
   if (!walkable(grid, goal.r, goal.c)) return null;
@@ -39,7 +36,6 @@ export function bfs(grid, start, goal) {
   while (queue.length > 0) {
     const cur = queue.shift();
     if (cur.r === goal.r && cur.c === goal.c) {
-      // walk the parent chain back to start, then reverse
       const path = [];
       let step = cur;
       while (!(step.r === start.r && step.c === start.c)) {

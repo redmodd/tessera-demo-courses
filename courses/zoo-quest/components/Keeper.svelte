@@ -1,9 +1,4 @@
 <script>
-  // A zoo keeper, drawn in the same flat style as the Explorer but distinct: a peaked
-  // ranger cap (vs the explorer's safari dome), a uniform shirt with a badge, and a
-  // gentle idle bob. Colours + hair style are props so each keeper reads as a different
-  // person (gender presentation, skin tone, uniform). Front-facing — keepers stand and
-  // greet the player, they don't walk.
   let {
     skin = '#c98a5a',
     hair = '#33271a',
@@ -42,7 +37,7 @@
       <ellipse cx="30" cy="21" rx="2.6" ry="5.2" fill={hair} />
     {/if}
     <circle cx="20" cy="18" r="8.5" fill={skin} />
-    <!-- sideburn hair peeking under the cap -->
+    <!-- sideburns -->
     <path d="M11.8 18.5 Q11.2 13.5 15 12 L15 18.5 Z" fill={hair} />
     <path d="M28.2 18.5 Q28.8 13.5 25 12 L25 18.5 Z" fill={hair} />
     <!-- face -->
@@ -55,7 +50,7 @@
       stroke-width="1"
       stroke-linecap="round"
     />
-    <!-- peaked cap: dome + forward visor -->
+    <!-- cap -->
     <path d="M11.6 13.2 Q20 4 28.4 13.2 Z" fill={cap} />
     <ellipse cx="20" cy="13.2" rx="9" ry="2.3" fill={cap} />
     <ellipse cx="20" cy="14.7" rx="6.6" ry="1.5" fill="rgba(0,0,0,0.25)" />

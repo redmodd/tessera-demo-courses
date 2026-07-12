@@ -1,13 +1,11 @@
 <script>
-  // A little safari explorer. `facing` picks the direction (down/up/left/right);
-  // `walking` runs the leg/arm swing + body bob. Pace comes from CSS vars set by
-  // the parent: --step (one footfall) and --cycle (a full stride = 2 tiles).
+  // Pace comes from CSS vars set by the parent: --step (one footfall) and --cycle (a stride).
   let { facing = 'down', walking = false } = $props();
 </script>
 
 <div class="explorer {facing}" class:walking>
   <svg viewBox="0 0 40 54" width="38" height="51" aria-hidden="true">
-    <!-- ground shadow (does not bob) -->
+    <!-- ground shadow -->
     <ellipse class="shadow" cx="20" cy="51" rx="11" ry="2.6" />
 
     <g class="figure">
@@ -108,7 +106,7 @@
   .arm {
     transform-box: fill-box;
     transform-origin: 50% 0%;
-    transition: transform 140ms ease; /* settle to neutral when stopping */
+    transition: transform 140ms ease;
   }
 
   @keyframes swingA {
