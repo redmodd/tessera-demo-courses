@@ -7,7 +7,8 @@
   import Animal from '../../../components/Animal.svelte';
   const nav = useNavigation();
 
-  const cast = ['lion', 'elephant', 'squirrel', 'lion', 'elephant', 'squirrel'];
+  // Every collectable sprite, savanna and polar alternating.
+  const cast = ['lion', 'penguin', 'elephant', 'polar-bear', 'squirrel', 'snowy-owl'];
 </script>
 
 <main class="splash">

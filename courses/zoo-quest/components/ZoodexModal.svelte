@@ -3,7 +3,7 @@
   // uncollected ones as a silhouette.
   import { onMount } from 'svelte';
   import { usePersistence } from 'tessera-learn';
-  import { readStore, onStoreChange, ALL_CARDS, TOTAL_ANIMALS } from '../lib/zoodex.js';
+  import { readStore, onStoreChange, ALL_CARDS, TOTAL_ANIMALS, REGIONS } from '../lib/zoodex.js';
   import ZoodexCard from './ZoodexCard.svelte';
   import Animal from './Animal.svelte';
   import Icon from './Icon.svelte';
@@ -19,6 +19,7 @@
   onMount(() => onStoreChange(() => (dex = readStore(store))));
 
   const collected = $derived(new Set(dex.collected));
+  const badges = $derived(new Set(dex.badges));
   const selected = $derived(ALL_CARDS.find((c) => c.id === selectedId) ?? null);
 
   function open() {
@@ -57,6 +58,17 @@
       <span class="count">{collected.size}/{TOTAL_ANIMALS}</span>
       <button class="close" aria-label="Close Zoodex" onclick={() => dlg.close()}>✕</button>
     </header>
+
+    <ul class="badges">
+      {#each Object.values(REGIONS) as region}
+        {@const earned = badges.has(region.id)}
+        <li class="badge" class:earned>
+          <span class="badge-icon" aria-hidden="true"><Icon name="badge" /></span>
+          <span>{region.badgeLabel}</span>
+          <span class="badge-state">{earned ? 'Earned' : 'Locked'}</span>
+        </li>
+      {/each}
+    </ul>
 
     <div class="grid">
       {#each ALL_CARDS as card}
@@ -128,6 +140,43 @@
   .count {
     font-weight: 700;
     letter-spacing: 0.04em;
+    color: var(--zoo-bark);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border: 2px solid var(--zoo-bark);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #fff;
+    color: var(--zoo-text-light);
+  }
+  .badge :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+  .badge:not(.earned) .badge-icon {
+    opacity: 0.35;
+    filter: grayscale(1);
+  }
+  .badge.earned {
+    background: var(--zoo-ground);
+    color: var(--zoo-ink);
+  }
+  .badge-state {
+    font-weight: 700;
     color: var(--zoo-bark);
   }
   .close {

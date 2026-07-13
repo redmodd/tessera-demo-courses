@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, exhibitAt, exhibitFootprint, pickEncounter } from './worldmap.js';
+import { WORLD, TILE, walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, exhibitAt, pickEncounter } from './worldmap.js';
 import { bfs } from './engine.js';
 import { ANIMALS } from './zoodex.js';
 
@@ -96,7 +96,7 @@ describe('WORLD data invariants', () => {
     }
   });
 
-  // The arrival tile for a map: WORLD.start for the entrance, otherwise the entry of
+  // The arrival tile for a map: WORLD.start for the starting map, otherwise the entry of
   // the first inbound link that targets it.
   function arrivalTile(mapId) {
     if (mapId === WORLD.start.map) return { r: WORLD.start.r, c: WORLD.start.c };
@@ -135,11 +135,7 @@ describe('WORLD data invariants', () => {
     }
   });
 
-  test('you can walk entrance → plaza → savanna and reach both keepers', () => {
-    expect(resolveLink(WORLD, 'entrance', { r: 10, c: 31 })).toEqual({
-      to: 'plaza',
-      entry: { r: 10, c: 1 },
-    });
+  test('you can walk plaza → savanna and reach both keepers', () => {
     expect(resolveLink(WORLD, 'plaza', { r: 10, c: 31 })).toEqual({
       to: 'savanna',
       entry: { r: 13, c: 1 },
@@ -161,23 +157,17 @@ describe('WORLD data invariants', () => {
 
   const DISPLAY_TYPES = new Set(['poster', 'diet', 'size', 'touchscreen', 'specimen', 'map']);
 
-  test('every display station is a blocked display footprint that resolves, bumps, and is reachable', () => {
+  test('every display station is a blocked display tile that resolves, bumps, and is reachable', () => {
     for (const [mapId, stations] of Object.entries(WORLD.exhibits ?? {})) {
       const { grid } = WORLD.maps[mapId];
       const from = arrivalTile(mapId);
-      for (const station of stations) {
-        const tiles = exhibitFootprint(station);
-        expect(tiles.length, `station ${station.key} span`).toBeGreaterThan(0);
-        const beside = [];
-        for (const { r, c } of tiles) {
-          expect(isDisplay(grid, r, c), `display ${mapId} (${r},${c})`).toBe(true);
-          expect(walkable(grid, r, c)).toBe(false);
-          expect(exhibitAt(WORLD, mapId, { r, c })).toBe(station);
-          for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-            const t = { r: r + dr, c: c + dc };
-            if (walkable(grid, t.r, t.c)) beside.push(t);
-          }
-        }
+      for (const { at, ...station } of stations) {
+        expect(isDisplay(grid, at.r, at.c), `display ${mapId} (${at.r},${at.c})`).toBe(true);
+        expect(walkable(grid, at.r, at.c)).toBe(false);
+        expect(exhibitAt(WORLD, mapId, at)).toMatchObject(station);
+        const beside = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+          .map(([dr, dc]) => ({ r: at.r + dr, c: at.c + dc }))
+          .filter((t) => walkable(grid, t.r, t.c));
         expect(
           beside.some((t) => bfs(grid, from, t)),
           `station ${station.animal}/${station.key} not approachable from ${JSON.stringify(from)}`,

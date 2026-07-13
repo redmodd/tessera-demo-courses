@@ -38,13 +38,9 @@ export function resolveLink(world, mapId, pos) {
   return hit ? { to: hit.to, entry: hit.entry } : null;
 }
 
-export function keeperRecordAt(world, mapId, pos) {
-  const list = world.enclosures?.[mapId] ?? [];
-  return list.find((e) => e.keeper.r === pos.r && e.keeper.c === pos.c) ?? null;
-}
-
 export function keeperAt(world, mapId, pos) {
-  return keeperRecordAt(world, mapId, pos)?.animal ?? null;
+  const list = world.enclosures?.[mapId] ?? [];
+  return list.find((e) => e.keeper.r === pos.r && e.keeper.c === pos.c)?.animal ?? null;
 }
 
 export function isStaffDoor(grid, r, c) {
@@ -64,19 +60,9 @@ export function signAt(world, mapId, pos) {
   return list.find((s) => s.at.r === pos.r && s.at.c === pos.c) ?? null;
 }
 
-export function exhibitFootprint(station) {
-  const tiles = [];
-  for (let i = 0; i < (station.span ?? 1); i++) tiles.push({ r: station.at.r, c: station.at.c + i });
-  return tiles;
-}
-
 export function exhibitAt(world, mapId, pos) {
   const list = world.exhibits?.[mapId] ?? [];
-  return (
-    list.find(
-      (s) => pos.r === s.at.r && pos.c >= s.at.c && pos.c < s.at.c + (s.span ?? 1),
-    ) ?? null
-  );
+  return list.find((s) => s.at.r === pos.r && s.at.c === pos.c) ?? null;
 }
 
 export function pickEncounter(world, mapId, rng = Math.random) {
@@ -94,29 +80,7 @@ export function parseMap(str) {
   return { grid, rows: grid.length, cols: grid[0].length };
 }
 
-const ENTRANCE = parseMap(`
-################################
-#B...........~~................#
-#..BBB..I....~~................#
-#..B.B.......~~................#
-#..BBB.......~~................#
-#..B.B.......~~................#
-#............~~..............BB.#
-#.####...++++~~++++..........BB.#
-#.####...++++~~++++..........BB.#
-#.####...++++~~++++..........BB.#
->++++++++++++++++++++++++++++++>
-#.####...++++~~++++..........BB.#
-#.####...++++~~++++..........BB.#
-#.####...++++~~++++..........BB.#
-#............~~..............BB.#
-#............~~................#
-#............~~................#
-#............~~................#
-#.......I....~~................#
-################################
-`);
-
+// The plaza is where the visit starts, so its west edge is a wall, not a connector.
 const PLAZA = parseMap(`
 ################################
 #.........B....................#
@@ -128,7 +92,7 @@ const PLAZA = parseMap(`
 #.......+...B..+.......+.......#
 #......B+..++++++++++..+.......#
 #...B...+..+++~~~~+++..+.......#
->++++++++++++~~~~~~++++++++++++>
+#++++++++++++~~~~~~++++++++++++>
 #...BB.....++~~~~~~++..+.......#
 #..........+++~~~~+++..+.......#
 #..........++++++++++..+B......#
@@ -169,6 +133,7 @@ const SAVANNA = parseMap(`
 ######################>#################
 `);
 
+// Both discovery interiors share one floor plan — the exhibits and decor differ, not the room.
 const DISCOVERY = parseMap(`
 ooooooooooooooooo
 .................
@@ -228,38 +193,20 @@ const POLAR = parseMap(`
 ########################################
 `);
 
-const POLAR_DISCOVERY = parseMap(`
-ooooooooooooooooo
-.................
-..X...X...X...X..
-.................
-..X...........X..
-.................
-..X...........X..
-.................
-.................
-..X...X...X...X..
-.................
-ooooooooDoooooooo
-`);
-
 export const WORLD = {
-  start: { map: 'polar', r: 18, c: 19 },
+  start: { map: 'plaza', r: 10, c: 1 },
   maps: {
-    entrance: ENTRANCE,
     plaza: PLAZA,
     savanna: SAVANNA,
     centre: CENTRE,
     discovery: DISCOVERY,
     polar: POLAR,
-    'polar-discovery': POLAR_DISCOVERY,
+    'polar-discovery': DISCOVERY,
   },
   interiors: ['centre', 'discovery', 'polar-discovery'],
   // Each `entry` sits just inside the destination — landing on a connector would loop back.
   links: {
-    entrance: [{ at: { r: 10, c: 31 }, to: 'plaza', entry: { r: 10, c: 1 } }],
     plaza: [
-      { at: { r: 10, c: 0 }, to: 'entrance', entry: { r: 10, c: 30 } },
       { at: { r: 10, c: 31 }, to: 'savanna', entry: { r: 13, c: 1 } },
       { at: { r: 4, c: 15 }, to: 'centre', entry: { r: 9, c: 8 } },
     ],
@@ -331,12 +278,6 @@ export const WORLD = {
     ],
   },
   signs: {
-    entrance: [
-      { at: { r: 2, c: 8 }, title: 'Zoo Entrance',
-        body: 'Welcome to the City Zoo! Ticket booths are just ahead.\n\nAdult: $12 · Child (3–12): $8 · Family of four: $36.' },
-      { at: { r: 18, c: 8 }, title: 'Zoo Entrance',
-        body: 'Thank you for visiting! We hope you enjoyed the lions, elephants, and everything in between. See you next time!' },
-    ],
     plaza: [
       { at: { r: 5, c: 13 }, title: 'Gift Shop',
         body: 'Welcome! Step inside for plush toys, mugs, tees, and souvenirs.' },

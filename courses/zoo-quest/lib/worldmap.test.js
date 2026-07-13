@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { walkable, resolveLink, keeperAt, keeperRecordAt, isStaffDoor, isDisplay, exhibitAt, WORLD } from './worldmap.js';
+import { walkable, resolveLink, keeperAt, isStaffDoor, isDisplay, exhibitAt, WORLD } from './worldmap.js';
 import { bfs } from './engine.js';
 
 // grid: '.' path, '#' wall, '~' water, 'F' fence, 'p' pen, 'K' keeper, '>' connector
@@ -67,13 +67,9 @@ describe('resolveLink', () => {
   });
 });
 
-describe('keeperAt / keeperRecordAt', () => {
+describe('keeperAt', () => {
   test('returns the animal slug when standing on a keeper tile', () => {
     expect(keeperAt(world, 'savanna', { r: 2, c: 2 })).toBe('lion');
-  });
-
-  test('returns the full enclosure record at the keeper tile', () => {
-    expect(keeperRecordAt(world, 'savanna', { r: 2, c: 2 })?.animal).toBe('lion');
   });
 
   test('returns null when not on a keeper', () => {
@@ -108,7 +104,7 @@ describe('isDisplay / exhibitAt', () => {
     ['W', 'X', 'X', '.', 'W'],
     ['W', '.', '.', '.', 'W'],
   ];
-  const station = { animal: 'lion', key: 'pride', at: { r: 1, c: 1 }, span: 2 };
+  const station = { animal: 'lion', key: 'pride', at: { r: 1, c: 1 } };
   const room = {
     maps: { gallery: { grid } },
     exhibits: { gallery: [station] },
@@ -121,27 +117,24 @@ describe('isDisplay / exhibitAt', () => {
     expect(isDisplay(grid, 9, 9)).toBe(false);
   });
 
-  test('exhibitAt returns the station whose footprint contains the tile, else null', () => {
+  test('exhibitAt returns the station on that tile, else null', () => {
     expect(exhibitAt(room, 'gallery', { r: 1, c: 1 })).toBe(station);
-    expect(exhibitAt(room, 'gallery', { r: 1, c: 2 })).toBe(station); // within span
-    expect(exhibitAt(room, 'gallery', { r: 1, c: 3 })).toBeNull(); // past span
+    expect(exhibitAt(room, 'gallery', { r: 1, c: 2 })).toBeNull(); // a display tile, but no station
     expect(exhibitAt(room, 'gallery', { r: 2, c: 1 })).toBeNull(); // wrong row
     expect(exhibitAt(room, 'nowhere', { r: 1, c: 1 })).toBeNull();
   });
 });
 
-describe('entrance and plaza paths to the exits', () => {
-  const entrance = WORLD.maps.entrance.grid;
+describe('the plaza path to the exit', () => {
   const plaza = WORLD.maps.plaza.grid;
 
-  test('entrance has a straight path along row 10 to the east exit', () => {
-    expect(entrance[10][1]).toBe('+');
-    expect(entrance[10][30]).toBe('+');
-    expect(bfs(entrance, { r: 10, c: 1 }, { r: 10, c: 30 })).toBeTruthy();
+  test('the west edge is walled off — the plaza is where you start, not a doorway', () => {
+    expect(plaza[10][0]).toBe('#');
+    expect(WORLD.links.plaza.some((l) => l.at.c === 0)).toBe(false);
   });
 
   test('plaza path bypasses the pond over the top and links both doors', () => {
-    expect(plaza[10][1]).toBe('+'); // west door side
+    expect(plaza[10][1]).toBe('+'); // the start tile
     expect(plaza[10][30]).toBe('+'); // east door side
     expect(plaza[8][12]).toBe('+'); // the over-the-top crossing (pond now one row lower)
     expect(plaza[10][13]).toBe('~'); // pond left intact

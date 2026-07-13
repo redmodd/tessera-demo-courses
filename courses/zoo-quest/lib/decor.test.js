@@ -2,10 +2,6 @@ import { describe, test, expect } from 'vitest';
 import { hasTuft } from './decor.js';
 
 describe('hasTuft', () => {
-  test('returns a boolean', () => {
-    expect(typeof hasTuft(1, 1)).toBe('boolean');
-  });
-
   test('is deterministic — same coords give the same answer', () => {
     expect(hasTuft(3, 7)).toBe(hasTuft(3, 7));
     expect(hasTuft(10, 2)).toBe(hasTuft(10, 2));

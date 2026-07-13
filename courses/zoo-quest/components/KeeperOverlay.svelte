@@ -1,9 +1,9 @@
 <script>
   // Each question is useQuestion(graded:false): reported to the LMS as an interaction, but
   // out of the gradebook, so manual completion mode doesn't warn.
-  import { onMount } from 'svelte';
   import { useQuestion, usePersistence } from 'tessera-learn';
   import { collect, drawQuestions, KEEPERS } from '../lib/zoodex.js';
+  import { zooDialog } from '../lib/modal.js';
   import ZoodexCard from './ZoodexCard.svelte';
   import Keeper from './Keeper.svelte';
   import Icon from './Icon.svelte';
@@ -36,22 +36,6 @@
     }),
   );
 
-  let primaryBtn = $state(null); // the "Next"/Continue button when shown; else null
-
-  // Focus the dialog, not a button, so nothing looks tab-selected and Enter keeps working.
-  // A wrong answer leaves focus on the choices so they can pick again.
-  onMount(() => {
-    dlg.showModal();
-    dlg.focus();
-  });
-
-  function onKeydown(e) {
-    if (e.key === 'Enter' && e.target === dlg && primaryBtn) {
-      e.preventDefault();
-      primaryBtn.click();
-    }
-  }
-
   function choose(i) {
     if (feedback === 'correct') return; // locked while the "Next" prompt is showing
     picks[qIndex] = i;
@@ -79,7 +63,7 @@
   }
 </script>
 
-<dialog bind:this={dlg} class="keeper zoo-modal" tabindex="-1" aria-labelledby="keeper-title" onkeydown={onKeydown} onclose={() => onResolve()}>
+<dialog bind:this={dlg} use:zooDialog class="keeper zoo-modal" tabindex="-1" aria-labelledby="keeper-title" onclose={() => onResolve()}>
   {#if phase === 'quiz'}
     {@const q = questions[qIndex]}
     <div class="who" aria-hidden="true"><Keeper {...KEEPERS[animal.id]} /></div>
@@ -107,7 +91,7 @@
       <p class="fb wrong" role="status">Not quite — give it another try.</p>
     {:else if feedback === 'correct'}
       <p class="fb correct" role="status">Correct! <Icon name="party" /></p>
-      <button class="continue" bind:this={primaryBtn} onclick={advance}>
+      <button class="continue" onclick={advance}>
         {qIndex < questions.length - 1 ? 'Next question →' : 'See your card →'}
       </button>
     {/if}
@@ -117,7 +101,7 @@
       {collected ? `${animal.name} is in your Zoodex` : `${animal.name} added to your Zoodex!`}
     </h2>
     <ZoodexCard {animal} />
-    <button class="continue" bind:this={primaryBtn} onclick={() => dlg.close()}>Continue →</button>
+    <button class="continue" onclick={() => dlg.close()}>Continue →</button>
   {/if}
   <button class="zoo-modal-close" aria-label="Exit" onclick={() => dlg.close()}>✕</button>
 </dialog>
@@ -158,38 +142,8 @@
     flex-direction: column;
     gap: 0.6rem;
   }
-  .choice,
-  .continue {
-    padding: 0.7rem 1rem;
-    border: 2px solid var(--zoo-bark);
-    border-radius: 10px;
-    background: #fff;
-    color: var(--zoo-ink);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .choice.picked {
-    background: var(--zoo-ground);
-  }
-  .choice:disabled {
-    cursor: default;
-    opacity: 0.85;
-  }
   .continue {
     margin-top: 1.25rem;
-    background: var(--zoo-accent-deep);
-    color: #fff;
-    border-color: transparent;
-  }
-  .choice:hover:not(:disabled),
-  .continue:hover {
-    filter: brightness(0.97);
-  }
-  .choice:focus-visible,
-  .continue:focus-visible {
-    outline: 3px solid var(--zoo-accent);
-    outline-offset: 2px;
   }
   .fb {
     margin: 1rem 0 0;

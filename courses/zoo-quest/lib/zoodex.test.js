@@ -3,8 +3,6 @@ import {
   readStore,
   updateStore,
   collect,
-  earnBadge,
-  logFieldNote,
   ALL_CARDS,
   TOTAL_ANIMALS,
   drawQuestions,
@@ -65,7 +63,6 @@ describe('readStore', () => {
     expect(readStore(fakeStore())).toEqual({
       collected: [],
       badges: [],
-      fieldNotes: [],
       map: null,
       avatar: null,
     });
@@ -88,7 +85,7 @@ describe('updateStore', () => {
   });
 
   test('does not mutate the previous value', () => {
-    const prev = { collected: ['lion'], badges: [], fieldNotes: [], map: null, avatar: null };
+    const prev = { collected: ['lion'], badges: [], map: null, avatar: null };
     const s = fakeStore(prev);
     collect(s, 'elephant');
     expect(prev.collected).toEqual(['lion']); // untouched
@@ -96,7 +93,7 @@ describe('updateStore', () => {
   });
 });
 
-describe('collect / badge / field-note helpers', () => {
+describe('collect', () => {
   test('collect adds and dedupes', () => {
     const s = fakeStore();
     collect(s, 'lion');
@@ -117,20 +114,6 @@ describe('collect / badge / field-note helpers', () => {
     const s = fakeStore({ collected: ['lion'], badges: ['savanna'] });
     collect(s, 'elephant');
     expect(s.get().badges).toEqual(['savanna']);
-  });
-
-  test('earnBadge adds and dedupes', () => {
-    const s = fakeStore();
-    earnBadge(s, 'savanna');
-    earnBadge(s, 'savanna');
-    expect(s.get().badges).toEqual(['savanna']);
-  });
-
-  test('logFieldNote adds and dedupes', () => {
-    const s = fakeStore();
-    logFieldNote(s, 'squirrel');
-    logFieldNote(s, 'squirrel');
-    expect(s.get().fieldNotes).toEqual(['squirrel']);
   });
 
   test('helpers preserve unrelated fields', () => {

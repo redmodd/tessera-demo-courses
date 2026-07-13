@@ -60,7 +60,42 @@
   outline-offset: 2px;
 }
 
-/* Per-area ground theming; the base .board values are the Entrance look and the fallback. */
+/* Quiz answer buttons and the primary action button, shared by every overlay. Components
+   add only their deltas (wider padding, a top margin), which win on scoped specificity. */
+.choice,
+.continue {
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--zoo-bark);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--zoo-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.continue {
+  background: var(--zoo-accent-deep);
+  color: #fff;
+  border-color: transparent;
+}
+.choice.picked {
+  background: var(--zoo-ground);
+}
+.choice:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.choice:hover:not(:disabled),
+.continue:hover {
+  filter: brightness(0.97);
+}
+.choice:focus-visible,
+.continue:focus-visible {
+  outline: 3px solid var(--zoo-accent);
+  outline-offset: 2px;
+}
+
+/* Per-area ground theming; the base .board values are the fallback for an unthemed map. */
 .board {
   --ground-field: #9cae7a;
   --tall-grass: #7e9a5c;

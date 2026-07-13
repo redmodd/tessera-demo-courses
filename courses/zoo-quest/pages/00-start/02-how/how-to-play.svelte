@@ -5,6 +5,7 @@
 <script>
   import { useNavigation } from 'tessera-learn';
   import Icon from '../../../components/Icon.svelte';
+  import { TOTAL_ANIMALS } from '../../../lib/zoodex.js';
   const nav = useNavigation();
 </script>
 
@@ -33,13 +34,13 @@
         earn a <strong>badge</strong>.</span>
     </li>
     <li>
-      <span class="ic" aria-hidden="true"><Icon name="map" /></span>
-      <span>Prefer not to walk? Use the <strong>Map menu</strong> on the map to jump
-        straight to any spot.</span>
+      <span class="ic" aria-hidden="true"><Icon name="notebook" /></span>
+      <span>Open your <strong>Zoodex</strong> any time to review the cards and badges
+        you've collected.</span>
     </li>
   </ul>
 
-  <p class="goal">Goal: collect all <strong>8 animal cards</strong> to complete Zoo Quest.</p>
+  <p class="goal">Goal: collect all <strong>{TOTAL_ANIMALS} animal cards</strong> to complete Zoo Quest.</p>
 
   <button class="go" onclick={() => nav.goTo('overworld')}>Start exploring →</button>
 </main>

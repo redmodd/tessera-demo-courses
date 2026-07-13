@@ -1,7 +1,7 @@
 <script>
   // `display.type` picks the layout: touchscreen is a question with a reveal button, the
   // rest are an intro line + fact list. Facts are authored constants, hence {@html}.
-  import { onMount } from 'svelte';
+  import { zooDialog } from '../lib/modal.js';
   import Animal from './Animal.svelte';
 
   let { animal, display, onResolve } = $props();
@@ -16,28 +16,15 @@
   };
 
   let dlg;
-  let primaryBtn = $state(null);
   let revealed = $state(false); // touchscreen: has the answer been shown?
-
-  onMount(() => {
-    dlg.showModal();
-    dlg.focus();
-  });
-
-  function onKeydown(e) {
-    if (e.key === 'Enter' && e.target === dlg && primaryBtn) {
-      e.preventDefault();
-      primaryBtn.click();
-    }
-  }
 </script>
 
 <dialog
   bind:this={dlg}
+  use:zooDialog
   class="exhibit-info zoo-modal"
   tabindex="-1"
   aria-labelledby="exhibit-info-title"
-  onkeydown={onKeydown}
   onclose={() => onResolve()}
 >
   <div class="sprite" aria-hidden="true"><Animal kind={animal.id} /></div>
@@ -67,7 +54,7 @@
     </ul>
   {/if}
 
-  <button class="continue" bind:this={primaryBtn} onclick={() => dlg.close()}>Got it</button>
+  <button class="continue" onclick={() => dlg.close()}>Got it</button>
   <button class="zoo-modal-close" aria-label="Close" onclick={() => dlg.close()}>✕</button>
 </dialog>
 
@@ -158,19 +145,5 @@
   }
   .continue {
     padding: 0.7rem 1.4rem;
-    border: 2px solid transparent;
-    border-radius: 10px;
-    background: var(--zoo-accent-deep);
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .continue:hover {
-    filter: brightness(0.97);
-  }
-  .continue:focus-visible {
-    outline: 3px solid var(--zoo-accent);
-    outline-offset: 2px;
   }
 </style>

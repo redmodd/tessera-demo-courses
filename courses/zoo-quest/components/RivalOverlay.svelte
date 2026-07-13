@@ -1,8 +1,8 @@
 <script>
   // Bragging rights only: nothing is awarded, and each pick is an ungraded LMS interaction.
-  import { onMount } from 'svelte';
   import { useQuestion } from 'tessera-learn';
   import { gradeRival, pickSmug } from '../lib/people.js';
+  import { zooDialog } from '../lib/modal.js';
   import Patron from './Patron.svelte';
 
   // `faced` is the past outcome ('won' | 'lost') or null. When set, we skip the quiz and
@@ -43,21 +43,6 @@
 
   const result = $derived(gradeRival(picks, questions));
 
-  let primaryBtn = $state(null); // current Continue/advance button; null mid-question
-
-  // Focus the dialog, not a button, so nothing looks tab-selected and Enter keeps working.
-  onMount(() => {
-    dlg.showModal();
-    dlg.focus();
-  });
-
-  function onKeydown(e) {
-    if (e.key === 'Enter' && e.target === dlg && primaryBtn) {
-      e.preventDefault();
-      primaryBtn.click();
-    }
-  }
-
   function startQuiz() {
     phase = 'quiz';
     dlg.focus();
@@ -84,17 +69,17 @@
   }
 </script>
 
-<dialog bind:this={dlg} class="rival zoo-modal" tabindex="-1" aria-labelledby="rival-title" onkeydown={onKeydown} onclose={() => onResolve()}>
+<dialog bind:this={dlg} use:zooDialog class="rival zoo-modal" tabindex="-1" aria-labelledby="rival-title" onclose={() => onResolve()}>
   <div class="who" aria-hidden="true"><Patron {...patron.look} /></div>
 
   {#if wasFaced}
     <h2 id="rival-title">{patron.name}</h2>
     <p class="prompt result">{smugLine}</p>
-    <button class="continue" bind:this={primaryBtn} onclick={() => dlg.close()}>Continue →</button>
+    <button class="continue" onclick={() => dlg.close()}>Continue →</button>
   {:else if phase === 'intro'}
     <h2 id="rival-title">{patron.name}</h2>
     <p class="prompt intro">{patron.intro}</p>
-    <button class="continue" bind:this={primaryBtn} onclick={startQuiz}>I’m ready →</button>
+    <button class="continue" onclick={startQuiz}>I’m ready →</button>
   {:else if phase === 'quiz'}
     {@const q = questions[qIndex]}
     <h2 id="rival-title">{patron.name}</h2>
@@ -124,7 +109,7 @@
       <p class="fb {right ? 'right' : 'wrong'}" role="status">
         {right ? reactions.right : reactions.wrong}
       </p>
-      <button class="continue" bind:this={primaryBtn} onclick={advance}>
+      <button class="continue" onclick={advance}>
         {qIndex < questions.length - 1 ? 'Next question →' : 'See how you did →'}
       </button>
     {/if}
@@ -132,7 +117,7 @@
     <h2 id="rival-title">{result.won ? 'You beat him!' : 'He got you this time'}</h2>
     <p class="prompt result">{result.won ? reactions.win : reactions.lose}</p>
     <p class="tally">You answered {result.correctCount} of {questions.length} correctly.</p>
-    <button class="continue" bind:this={primaryBtn} onclick={() => dlg.close()}>Continue →</button>
+    <button class="continue" onclick={() => dlg.close()}>Continue →</button>
   {/if}
   <button class="zoo-modal-close" aria-label="Exit" onclick={() => dlg.close()}>✕</button>
 </dialog>
@@ -177,20 +162,6 @@
     flex-direction: column;
     gap: 0.6rem;
   }
-  .choice,
-  .continue {
-    padding: 0.7rem 1rem;
-    border: 2px solid var(--zoo-bark);
-    border-radius: 10px;
-    background: #fff;
-    color: var(--zoo-ink);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .choice.picked {
-    background: var(--zoo-ground);
-  }
   .choice.right {
     border-color: var(--zoo-accent-deep);
     background: var(--zoo-accent, #e7f0e7);
@@ -199,24 +170,8 @@
     border-color: var(--zoo-error, #dc2626);
     background: #fbeaea;
   }
-  .choice:disabled {
-    cursor: default;
-    opacity: 0.9;
-  }
   .continue {
     margin-top: 1.25rem;
-    background: var(--zoo-accent-deep);
-    color: #fff;
-    border-color: transparent;
-  }
-  .choice:hover:not(:disabled),
-  .continue:hover {
-    filter: brightness(0.97);
-  }
-  .choice:focus-visible,
-  .continue:focus-visible {
-    outline: 3px solid var(--zoo-accent);
-    outline-offset: 2px;
   }
   .fb {
     margin: 1rem 0 0;

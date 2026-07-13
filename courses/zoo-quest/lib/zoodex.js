@@ -1,6 +1,5 @@
 // The `usePersistence('zoodex')` store, shared by the layout, overworld, and keepers:
-//   { collected: string[], badges: string[], fieldNotes: string[],
-//     map: string|null, avatar: {x,y}|null }
+//   { collected: string[], badges: string[], map: string|null, avatar: {x,y}|null }
 // Write it through `updateStore` so the always-mounted HUD gets its 'zoodex-change' event.
 
 export const ANIMALS = {
@@ -595,7 +594,6 @@ export function readStore(store) {
   return {
     collected: s.collected ?? [],
     badges: s.badges ?? [],
-    fieldNotes: s.fieldNotes ?? [],
     map: s.map ?? null,
     avatar: s.avatar ?? null,
   };
@@ -631,8 +629,3 @@ export const collect = (store, animalId) =>
     };
   });
 
-export const earnBadge = (store, id) =>
-  updateStore(store, (s) => ({ ...s, badges: addUnique(s.badges, id) }));
-
-export const logFieldNote = (store, id) =>
-  updateStore(store, (s) => ({ ...s, fieldNotes: addUnique(s.fieldNotes, id) }));

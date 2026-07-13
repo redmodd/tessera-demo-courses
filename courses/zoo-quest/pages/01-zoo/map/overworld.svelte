@@ -7,6 +7,7 @@
   import { useNavigation, usePersistence } from 'tessera-learn';
   import {
     WORLD,
+    TILE as CH,
     walkable,
     resolveLink,
     keeperAt,
@@ -20,7 +21,6 @@
   import { bfs, camOffset } from '../../../lib/engine.js';
   import { penTiles, wanderStep, roamTiles } from '../../../lib/npc.js';
   import { PEOPLE } from '../../../lib/people.js';
-  import { readRivals, recordRival } from '../../../lib/rivals.js';
   import { ANIMALS, ENCOUNTERS, KEEPERS, readStore, onStoreChange } from '../../../lib/zoodex.js';
   import Explorer from '../../../components/Explorer.svelte';
   import Animal from '../../../components/Animal.svelte';
@@ -29,7 +29,6 @@
   import EncounterOverlay from '../../../components/EncounterOverlay.svelte';
   import KeeperOverlay from '../../../components/KeeperOverlay.svelte';
   import PatronOverlay from '../../../components/PatronOverlay.svelte';
-  import EmployeesOnlyOverlay from '../../../components/EmployeesOnlyOverlay.svelte';
   import SignOverlay from '../../../components/SignOverlay.svelte';
   import ExhibitOverlay from '../../../components/ExhibitOverlay.svelte';
   import RivalOverlay from '../../../components/RivalOverlay.svelte';
@@ -39,10 +38,9 @@
   import { hasTuft } from '../../../lib/decor.js';
   import SavannaDecor from '../../../components/SavannaDecor.svelte';
   import PlazaDecor from '../../../components/PlazaDecor.svelte';
-  import EntranceDecor from '../../../components/EntranceDecor.svelte';
   import PolarDecor from '../../../components/PolarDecor.svelte';
 
-  const TILE = 56;
+  const TILE = 56; // px; CH.* are the grid characters
   const STEP_MS = 220;
   const FADE_MS = 120;
   const CRITTER_TICK_MS = 250;
@@ -52,8 +50,10 @@
   const PATRON_GLIDE_MS = 550; // < wander, so each glide settles before the next step
   const PATRON_ROAM_RADIUS = 3;
 
+  // A staff door is just a sign whose text turns you away.
+  const STAFF_ONLY = { title: 'Staff Only', body: 'Sorry, this area’s for zoo staff only!', icon: 'door' };
+
   const MAP_LABELS = {
-    entrance: 'Zoo Entrance',
     plaza: 'Central Plaza',
     savanna: 'Savanna',
     centre: 'Gift Shop',
@@ -70,26 +70,26 @@
   };
 
   const TILES = {
-    '.': { cls: 'ground', glyph: '' },
-    '+': { cls: 'path', glyph: '' },
-    '#': { cls: 'hedge', icon: 'tree' },
-    '~': { cls: 'water', glyph: '' },
-    g: { cls: 'grass', icon: 'leaf' },
-    '>': { cls: 'connector', glyph: '' },
-    F: { cls: 'fence', glyph: '' },
-    p: { cls: 'pen', glyph: '' },
-    K: { cls: 'keeper', glyph: '' },
-    W: { cls: 'building', glyph: '' },
-    D: { cls: 'door', icon: 'door' },
-    E: { cls: 'staff-door', icon: 'door' },
-    c: { cls: 'desk', glyph: '' },
-    s: { cls: 'shelf', glyph: '' },
-    h: { cls: 'rack', glyph: '' },
-    t: { cls: 'table', glyph: '' },
-    o: { cls: 'void', glyph: '' },
-    I: { cls: 'sign', icon: 'sign' },
-    X: { cls: 'display', glyph: '' },
-    B: { cls: 'prop', glyph: '' },
+    [CH.PATH]: { cls: 'ground' },
+    [CH.PATH_DIRT]: { cls: 'path' },
+    [CH.WALL]: { cls: 'hedge', icon: 'tree' },
+    [CH.WATER]: { cls: 'water' },
+    [CH.GRASS]: { cls: 'grass', icon: 'leaf' },
+    [CH.CONNECTOR]: { cls: 'connector' },
+    [CH.FENCE]: { cls: 'fence' },
+    [CH.PEN]: { cls: 'pen' },
+    [CH.KEEPER]: { cls: 'keeper' },
+    [CH.BUILDING]: { cls: 'building' },
+    [CH.DOOR]: { cls: 'door', icon: 'door' },
+    [CH.STAFF_DOOR]: { cls: 'staff-door', icon: 'door' },
+    [CH.DESK]: { cls: 'desk' },
+    [CH.SHELF]: { cls: 'shelf' },
+    [CH.RACK]: { cls: 'rack' },
+    [CH.TABLE]: { cls: 'table' },
+    [CH.VOID]: { cls: 'void' },
+    [CH.SIGN]: { cls: 'sign', icon: 'sign' },
+    [CH.DISPLAY]: { cls: 'display' },
+    [CH.PROP]: { cls: 'prop' },
   };
 
   const nav = useNavigation();
@@ -110,12 +110,7 @@
   let mapId = $state(restored.map);
   let pos = $state({ r: restored.r, c: restored.c });
   let collected = $state(saved.collected);
-  let badges = $state(saved.badges);
-  const refreshDex = () => {
-    const s = readStore(store);
-    collected = s.collected;
-    badges = s.badges;
-  };
+  const refreshDex = () => (collected = readStore(store).collected);
 
   let facing = $state('down');
   let heldActive = $state(false);
@@ -130,10 +125,11 @@
   let patrons = $state([]);
   let patronRoamSets = {}; // patron id → Set("r,c") roam area (roamers only)
   let talking = $state(null);
-  let employeesOnly = $state(false);
   let signInfo = $state(null);
   let exhibit = $state(null);
-  let rivals = $state(readRivals(rivalStore));
+  // Rivals the player has faced to a finish: { [rivalId]: 'won' | 'lost' }. Its own key, so
+  // rivals never touch the Zoodex collection.
+  let rivals = $state(rivalStore.get() ?? {});
   let patronLoop = null;
   let held = [];
   let walkLoop = null;
@@ -147,9 +143,10 @@
   let winH = $state(640);
 
   const map = $derived(WORLD.maps[mapId]);
+  const interior = $derived(WORLD.interiors.includes(mapId));
   const keepersOnMap = $derived(WORLD.enclosures[mapId] ?? []);
   const walking = $derived(heldActive || moving);
-  const busy = $derived(moving || crossing || !!encounter || !!keeper || !!talking || employeesOnly || !!signInfo || !!exhibit);
+  const busy = $derived(moving || crossing || !!encounter || !!keeper || !!talking || !!signInfo || !!exhibit);
 
   const reduceMotion =
     typeof window !== 'undefined' &&
@@ -162,7 +159,7 @@
 
   const waterTiles = $derived(
     map.grid.flatMap((row, r) =>
-      [...row].flatMap((code, c) => (code === '~' ? [{ r, c }] : [])),
+      [...row].flatMap((code, c) => (code === CH.WATER ? [{ r, c }] : [])),
     ),
   );
 
@@ -170,31 +167,25 @@
   // Seeding the water blob's displacement from the map name gives each pond its own shape.
   const blobSeed = $derived([...mapId].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 100);
 
-  function dominantShore(r, c) {
+  // The terrain a water tile mostly borders — that's the colour its shore is painted.
+  function dominantShore(tiles) {
     const counts = {};
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      const cls = TILES[map.grid[r + dr]?.[c + dc]]?.cls;
-      if (cls && TERRAIN_FILL[cls]) counts[cls] = (counts[cls] ?? 0) + 1;
-    }
-    const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    return best ? TERRAIN_FILL[best] : null;
-  }
-
-  const shoreFill = $derived.by(() => {
-    const counts = {};
-    for (const { r, c } of waterTiles) {
+    for (const { r, c } of tiles) {
       for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
         const cls = TILES[map.grid[r + dr]?.[c + dc]]?.cls;
         if (cls && TERRAIN_FILL[cls]) counts[cls] = (counts[cls] ?? 0) + 1;
       }
     }
     const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    return TERRAIN_FILL[best] ?? 'var(--zoo-water)';
-  });
+    return best ? TERRAIN_FILL[best] : null;
+  }
+
+  // The whole pond's shore, used for tiles that border no terrain at all (mid-pond).
+  const shoreFill = $derived(dominantShore(waterTiles) ?? 'var(--zoo-water)');
 
   const shoreFillByTile = $derived.by(() => {
     const m = new Map();
-    for (const { r, c } of waterTiles) m.set(`${r},${c}`, dominantShore(r, c) ?? shoreFill);
+    for (const t of waterTiles) m.set(`${t.r},${t.c}`, dominantShore([t]) ?? shoreFill);
     return m;
   });
 
@@ -233,10 +224,10 @@
   // Interior walls are a band drawn on the outer edge of the floor tiles that face the void,
   // not blocked tiles of their own — so the player can walk right up to the wall.
   function wallEdge(r, c) {
-    if (map.grid[r]?.[c] !== '.') return '';
+    if (map.grid[r]?.[c] !== CH.PATH) return '';
     const outside = (rr, cc) => {
       const ch = map.grid[rr]?.[cc];
-      return ch === undefined || ch === 'o';
+      return ch === undefined || ch === CH.VOID;
     };
     const top = outside(r - 1, c), bot = outside(r + 1, c);
     const left = outside(r, c - 1), right = outside(r, c + 1);
@@ -352,7 +343,7 @@
       crossTo(link);
       return true;
     }
-    if (map.grid[r][c] === 'g' && Math.random() < ENCOUNTER_RATE) {
+    if (map.grid[r][c] === CH.GRASS && Math.random() < ENCOUNTER_RATE) {
       const id = pickEncounter(WORLD, mapId);
       if (id) {
         stopLoop();
@@ -367,10 +358,6 @@
     encounter = null;
     refreshDex();
     tick().then(() => stageEl?.focus());
-  }
-
-  function openKeeper(animalId) {
-    keeper = ANIMALS[animalId];
   }
 
   function resolveKeeper() {
@@ -406,32 +393,9 @@
     facing = faceFor(dr, dc);
     const nr = pos.r + dr;
     const nc = pos.c + dc;
-    // These tiles are all blocked; bumping one opens its dialog instead of moving.
-    const animalId = keeperAt(WORLD, mapId, { r: nr, c: nc });
-    if (animalId) {
+    // Everything interactive sits on a blocked tile; bumping one opens its dialog.
+    if (openTarget(nr, nc)) {
       stopLoop();
-      openKeeper(animalId);
-      return;
-    }
-    const bumped = patronAt(nr, nc);
-    if (bumped) {
-      stopLoop();
-      talking = bumped;
-      return;
-    }
-    if (isStaffDoor(map.grid, nr, nc)) {
-      stopLoop();
-      employeesOnly = true;
-      return;
-    }
-    if (isSign(map.grid, nr, nc)) {
-      stopLoop();
-      signInfo = signAt(WORLD, mapId, { r: nr, c: nc });
-      return;
-    }
-    if (isDisplay(map.grid, nr, nc)) {
-      stopLoop();
-      exhibit = exhibitContentAt(nr, nc);
       return;
     }
     if (!walkable(map.grid, nr, nc)) return;
@@ -476,62 +440,90 @@
     if (seq === walkSeq) moving = false;
   }
 
-  async function interactWithKeeper(r, c) {
-    if (busy) return;
-    const animalId = keeperAt(WORLD, mapId, { r, c });
-    if (!animalId) return;
+  function patronAt(r, c) {
+    return patrons.find((p) => p.r === r && p.c === c) ?? null;
+  }
+
+  /**
+   * Walk to the nearest walkable tile beside (r, c) and end up facing it. Everything the
+   * player can bump into — keeper, patron, staff door, sign, display — sits on a blocked
+   * tile, so reaching it always means standing next to it.
+   *
+   * Returns 'arrived' when the avatar is now beside the target, 'unreachable' when no
+   * adjacent tile can be walked to (the caller may still open its dialog — a sign read
+   * across a fence is friendlier than a dead click), or 'cancelled' when a newer walk took
+   * over, in which case that walk owns `moving` and the caller must do nothing.
+   */
+  async function approach(r, c) {
+    if (Math.abs(r - pos.r) + Math.abs(c - pos.c) <= 1) {
+      facing = faceFor(r - pos.r, c - pos.c);
+      return 'arrived';
+    }
     let best = null;
     for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
       const t = { r: r + dr, c: c + dc };
       if (!walkable(map.grid, t.r, t.c)) continue;
       const path = bfs(map.grid, pos, t);
-      if (path && (!best || path.length < best.path.length)) best = { path };
+      if (path && (!best || path.length < best.length)) best = path;
     }
-    if (!best) return;
+    if (!best) return 'unreachable';
+
     const seq = ++walkSeq;
     moving = true;
-    for (const step of best.path) {
-      if (seq !== walkSeq) return;
+    for (const step of best) {
+      if (seq !== walkSeq) return 'cancelled';
       facing = faceFor(step.r - pos.r, step.c - pos.c);
       pos = { r: step.r, c: step.c };
       if (!reduceMotion) await delay(STEP_MS);
     }
-    if (seq !== walkSeq) return;
+    if (seq !== walkSeq) return 'cancelled';
     moving = false;
     facing = faceFor(r - pos.r, c - pos.c);
-    openKeeper(animalId);
+    return 'arrived';
   }
 
-  function patronAt(r, c) {
-    return patrons.find((p) => p.r === r && p.c === c) ?? null;
+  /**
+   * What the player can interact with on (r, c), or null. `open` is captured now, before any
+   * walk, so a patron stepping away mid-approach can't swap the dialog out from under it.
+   * `adjacentOnly` marks the ones you must actually reach: you can read a sign across a
+   * fence, but you can't talk to a keeper you never got to.
+   */
+  function targetAt(r, c) {
+    const animalId = keeperAt(WORLD, mapId, { r, c });
+    if (animalId) return { open: () => (keeper = ANIMALS[animalId]), adjacentOnly: true };
+
+    const patron = patronAt(r, c);
+    if (patron) return { open: () => (talking = patron), adjacentOnly: true };
+
+    if (isStaffDoor(map.grid, r, c)) return { open: () => (signInfo = STAFF_ONLY) };
+
+    if (isSign(map.grid, r, c)) {
+      const record = signAt(WORLD, mapId, { r, c });
+      return { open: () => (signInfo = record) };
+    }
+
+    if (isDisplay(map.grid, r, c)) {
+      const station = exhibitAt(WORLD, mapId, { r, c });
+      const animal = ANIMALS[station?.animal];
+      const display = animal?.exhibit?.displays?.[station.key];
+      return display ? { open: () => (exhibit = { animal, display }) } : null;
+    }
+    return null;
   }
 
-  async function interactWithPatron(patron) {
-    if (busy) return;
-    if (Math.abs(patron.r - pos.r) + Math.abs(patron.c - pos.c) <= 1) {
-      talking = patron;
-      return;
-    }
-    let best = null;
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      const t = { r: patron.r + dr, c: patron.c + dc };
-      if (!walkable(map.grid, t.r, t.c)) continue;
-      const path = bfs(map.grid, pos, t);
-      if (path && (!best || path.length < best.path.length)) best = { path };
-    }
-    if (!best) return;
-    const seq = ++walkSeq;
-    moving = true;
-    for (const step of best.path) {
-      if (seq !== walkSeq) return;
-      facing = faceFor(step.r - pos.r, step.c - pos.c);
-      pos = { r: step.r, c: step.c };
-      if (!reduceMotion) await delay(STEP_MS);
-    }
-    if (seq !== walkSeq) return;
-    moving = false;
-    facing = faceFor(patron.r - pos.r, patron.c - pos.c);
-    talking = patron;
+  // Bumped from the tile alongside: open it where we stand. True if anything opened.
+  function openTarget(r, c) {
+    const target = targetAt(r, c);
+    target?.open();
+    return !!target;
+  }
+
+  // Clicked from across the map: walk over, then open.
+  async function approachTarget(r, c, target) {
+    const arrival = await approach(r, c);
+    if (arrival === 'cancelled') return;
+    if (arrival === 'unreachable' && target.adjacentOnly) return;
+    target.open();
   }
 
   function resolvePatron() {
@@ -539,106 +531,9 @@
     tick().then(() => stageEl?.focus());
   }
 
-  async function interactWithStaffDoor(r, c) {
-    if (busy) return;
-    let best = null;
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      const t = { r: r + dr, c: c + dc };
-      if (!walkable(map.grid, t.r, t.c)) continue;
-      const path = bfs(map.grid, pos, t);
-      if (path && (!best || path.length < best.path.length)) best = { path };
-    }
-    if (!best) {
-      employeesOnly = true;
-      return;
-    }
-    const seq = ++walkSeq;
-    moving = true;
-    for (const step of best.path) {
-      if (seq !== walkSeq) return;
-      facing = faceFor(step.r - pos.r, step.c - pos.c);
-      pos = { r: step.r, c: step.c };
-      if (!reduceMotion) await delay(STEP_MS);
-    }
-    if (seq !== walkSeq) return;
-    moving = false;
-    facing = faceFor(r - pos.r, c - pos.c);
-    employeesOnly = true;
-  }
-
-  function resolveEmployeesOnly() {
-    employeesOnly = false;
-    tick().then(() => stageEl?.focus());
-  }
-
-  async function interactWithSign(r, c) {
-    if (busy) return;
-    const record = signAt(WORLD, mapId, { r, c });
-    let best = null;
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      const t = { r: r + dr, c: c + dc };
-      if (!walkable(map.grid, t.r, t.c)) continue;
-      const path = bfs(map.grid, pos, t);
-      if (path && (!best || path.length < best.path.length)) best = { path };
-    }
-    if (!best) {
-      signInfo = record;
-      return;
-    }
-    const seq = ++walkSeq;
-    moving = true;
-    for (const step of best.path) {
-      if (seq !== walkSeq) return;
-      facing = faceFor(step.r - pos.r, step.c - pos.c);
-      pos = { r: step.r, c: step.c };
-      if (!reduceMotion) await delay(STEP_MS);
-    }
-    if (seq !== walkSeq) return;
-    moving = false;
-    facing = faceFor(r - pos.r, c - pos.c);
-    signInfo = record;
-  }
-
   function resolveSign() {
     signInfo = null;
     tick().then(() => stageEl?.focus());
-  }
-
-  function exhibitContentAt(r, c) {
-    const station = exhibitAt(WORLD, mapId, { r, c });
-    if (!station) return null;
-    const animal = ANIMALS[station.animal];
-    const display = animal?.exhibit?.displays?.[station.key];
-    return display ? { animal, display } : null;
-  }
-
-  async function interactWithExhibit(r, c) {
-    if (busy) return;
-    const content = exhibitContentAt(r, c);
-    if (!content) return;
-    let best = null;
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      const t = { r: r + dr, c: c + dc };
-      if (!walkable(map.grid, t.r, t.c)) continue;
-      const path = bfs(map.grid, pos, t);
-      if (path && (!best || path.length < best.path.length)) best = { path };
-    }
-    if (!best) {
-      exhibit = content;
-      return;
-    }
-    const seq = ++walkSeq;
-    moving = true;
-    for (const step of best.path) {
-      if (seq !== walkSeq) return;
-      facing = faceFor(step.r - pos.r, step.c - pos.c);
-      pos = { r: step.r, c: step.c };
-      if (!reduceMotion) await delay(STEP_MS);
-    }
-    if (seq !== walkSeq) return;
-    moving = false;
-    facing = faceFor(r - pos.r, c - pos.c);
-    exhibit = content;
   }
 
   function resolveExhibit() {
@@ -647,24 +542,20 @@
   }
 
   function onCellClick(r, c) {
-    if (crossing || encounter || keeper || talking || employeesOnly || signInfo || exhibit) return;
+    if (crossing || encounter || keeper || talking || signInfo || exhibit) return;
     // A fresh click overrides an in-flight walk, so the new target is honoured from the
     // current tile instead of queueing behind the old path.
     if (moving) {
       walkSeq++;
       moving = false;
     }
-    const patron = patronAt(r, c);
-    if (patron) interactWithPatron(patron);
-    else if (keeperAt(WORLD, mapId, { r, c })) interactWithKeeper(r, c);
-    else if (isStaffDoor(map.grid, r, c)) interactWithStaffDoor(r, c);
-    else if (isSign(map.grid, r, c)) interactWithSign(r, c);
-    else if (isDisplay(map.grid, r, c)) interactWithExhibit(r, c);
+    const target = targetAt(r, c);
+    if (target) approachTarget(r, c, target);
     else walkTo(r, c);
   }
 
   function onKeyDown(e) {
-    if (encounter || keeper || talking || employeesOnly || signInfo || exhibit) return;
+    if (encounter || keeper || talking || signInfo || exhibit) return;
     const k = e.key.toLowerCase();
     if (!(k in KEYDIR)) return;
     e.preventDefault();
@@ -714,21 +605,21 @@
 
 <div
   class="stage"
-  class:interior={WORLD.interiors.includes(mapId)}
+  class:interior={interior}
   bind:this={stageEl}
   tabindex="-1"
   role="application"
   aria-label="Zoo overworld. Walk with the arrow keys or WASD, or press Tab to move between characters and Enter to talk to them."
 >
-  <div class="board area-{mapId}" class:smooth={!reduceMotion && !snap}
+  <div class="board area-{mapId}" class:interior class:smooth={!reduceMotion && !snap}
     style="--step:{STEP_MS}ms; --water-shore:{shoreFill}; width:{map.cols * TILE}px; height:{map.rows * TILE}px;
       transform: translate({tx}px, {ty}px);">
     {#each map.grid as row, r}
       {#each row as code, c}
-        {@const t = TILES[code] ?? TILES['.']}
+        {@const t = TILES[code] ?? TILES[CH.PATH]}
         {@const shore = t.cls === 'water' ? shoreFillByTile.get(`${r},${c}`) : null}
         <button
-          class="cell {t.cls}{WORLD.interiors.includes(mapId) ? ' ' + wallEdge(r, c) : ''}"
+          class="cell {t.cls}{interior ? ' ' + wallEdge(r, c) : ''}"
           style="left:{c * TILE}px; top:{r * TILE}px; width:{TILE}px; height:{TILE}px;
             background-position:{-c * TILE}px {-r * TILE}px;{shore ? ` --water-shore:${shore};` : ''}"
           onclick={() => onCellClick(r, c)}
@@ -736,7 +627,7 @@
           aria-hidden="true"
         >
           {#if t.icon}<span class="glyph"><Icon name={t.icon === 'tree' && mapId === 'polar' ? 'tree-snow' : t.icon} /></span>{/if}
-          {#if t.cls === 'ground' && !WORLD.interiors.includes(mapId) && hasTuft(r, c)}<GrassTuft dry={mapId === 'savanna'} snow={mapId === 'polar'} />{/if}
+          {#if t.cls === 'ground' && !interior && hasTuft(r, c)}<GrassTuft dry={mapId === 'savanna'} snow={mapId === 'polar'} />{/if}
         </button>
       {/each}
     {/each}
@@ -838,7 +729,7 @@
       </div>
     {/each}
 
-    {#if WORLD.interiors.includes(mapId)}
+    {#if interior}
       <InteriorDecor tile={TILE} {mapId} />
     {/if}
 
@@ -853,15 +744,12 @@
     {#if mapId === 'polar'}
       <PolarDecor tile={TILE} />
     {/if}
-    {#if mapId === 'entrance'}
-      <EntranceDecor tile={TILE} />
-    {/if}
 
     {#each keepersOnMap as e (e.animal)}
       <button class="sprite keeper-sprite"
         style="width:{TILE}px; height:{TILE}px;
           transform: translate3d({e.keeper.c * TILE}px, {e.keeper.r * TILE}px, 0);"
-        onclick={() => interactWithKeeper(e.keeper.r, e.keeper.c)}
+        onclick={() => onCellClick(e.keeper.r, e.keeper.c)}
         aria-label={`Talk to the ${ANIMALS[e.animal].name} keeper`}>
         <Keeper {...KEEPERS[e.animal]} />
       </button>
@@ -880,7 +768,7 @@
       <button class="sprite patron-sprite" class:smooth={!reduceMotion}
         style="width:{TILE}px; height:{TILE}px; --pw:{p.glideMs}ms;
           transform: translate3d({p.c * TILE}px, {p.r * TILE}px, 0);"
-        onclick={() => interactWithPatron(p)}
+        onclick={() => onCellClick(p.r, p.c)}
         aria-label={`Talk to ${p.name}`}>
         {#if p.sprite === 'keeper'}<Keeper {...p.look} />{:else}<Patron {...p.look} />{/if}
       </button>
@@ -918,8 +806,8 @@
       onResolve={resolvePatron}
       faced={rivals[talking.id] ?? null}
       onComplete={(outcome) => {
-        recordRival(rivalStore, talking.id, outcome);
-        rivals = readRivals(rivalStore);
+        rivals = { ...rivals, [talking.id]: outcome };
+        rivalStore.set(rivals);
       }}
     />
   {:else}
@@ -927,12 +815,8 @@
   {/if}
 {/if}
 
-{#if employeesOnly}
-  <EmployeesOnlyOverlay onResolve={resolveEmployeesOnly} />
-{/if}
-
 {#if signInfo}
-  <SignOverlay title={signInfo.title} body={signInfo.body} onResolve={resolveSign} />
+  <SignOverlay {...signInfo} onResolve={resolveSign} />
 {/if}
 
 {#if exhibit}
@@ -1037,35 +921,51 @@
   .cell.void { background: transparent; box-shadow: none; cursor: default; }
 
   .stage.interior { background: #2e2620; }
-  .board.area-centre { --centre-wall: #6f4630; }
+
+  /* Interior walls: a band on the outer edge of the floor tiles that face the void. Every
+     interior uses the same eight edges; only --wall changes. */
+  .we-top { box-shadow: inset 0 14px 0 var(--wall); }
+  .we-bottom { box-shadow: inset 0 -14px 0 var(--wall); }
+  .we-left { box-shadow: inset 14px 0 0 var(--wall); }
+  .we-right { box-shadow: inset -14px 0 0 var(--wall); }
+  .we-tl { box-shadow: inset 0 14px 0 var(--wall), inset 14px 0 0 var(--wall); }
+  .we-tr { box-shadow: inset 0 14px 0 var(--wall), inset -14px 0 0 var(--wall); }
+  .we-bl { box-shadow: inset 0 -14px 0 var(--wall), inset 14px 0 0 var(--wall); }
+  .we-br { box-shadow: inset 0 -14px 0 var(--wall), inset -14px 0 0 var(--wall); }
+
+  /* Every interior is the same plank floor; only the wall and door line change. */
+  .board.interior {
+    --wall: #6f4630;
+    --plank: #d8b079;
+    --plank-seam: #c49a62;
+    --door-line: rgba(194, 118, 47, 0.6);
+  }
+  .board.area-polar-discovery {
+    --wall: #4f6173;
+    --door-line: rgba(79, 97, 115, 0.6);
+  }
 
   /* 28px plank period divides the 56px tile, so seams stay continuous across tiles. */
-  .board.area-centre .cell.ground,
-  .board.area-centre .cell.building {
+  .board.interior .cell.ground,
+  .board.interior .cell.building,
+  .board.interior .cell.rack,
+  .board.interior .cell.display {
     background:
-      repeating-linear-gradient(0deg, #d8b079 0 26px, #c49a62 26px 28px),
-      #d8b079;
+      repeating-linear-gradient(0deg, var(--plank) 0 26px, var(--plank-seam) 26px 28px),
+      var(--plank);
     background-size: auto;
     box-shadow: none;
   }
 
-  .board.area-centre .we-top { box-shadow: inset 0 14px 0 var(--centre-wall); }
-  .board.area-centre .we-bottom { box-shadow: inset 0 -14px 0 var(--centre-wall); }
-  .board.area-centre .we-left { box-shadow: inset 14px 0 0 var(--centre-wall); }
-  .board.area-centre .we-right { box-shadow: inset -14px 0 0 var(--centre-wall); }
-  .board.area-centre .we-tl { box-shadow: inset 0 14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
-  .board.area-centre .we-tr { box-shadow: inset 0 14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
-  .board.area-centre .we-bl { box-shadow: inset 0 -14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
-  .board.area-centre .we-br { box-shadow: inset 0 -14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
-
-  .board.area-centre .cell.door,
-  .board.area-centre .cell.staff-door {
+  .board.interior .cell.door,
+  .board.interior .cell.staff-door {
     background: var(--ground-earth);
-    box-shadow: inset 0 0 0 2px rgba(194, 118, 47, 0.6);
+    box-shadow: inset 0 0 0 2px var(--door-line);
   }
-  .board.area-centre .cell.door .glyph,
-  .board.area-centre .cell.staff-door .glyph { display: none; }
+  .board.interior .cell.door .glyph,
+  .board.interior .cell.staff-door .glyph { display: none; }
 
+  /* Gift-shop fittings — the only interior with furniture. */
   .board.area-centre .cell.desk {
     background:
       linear-gradient(#caa063, #b07f3f) top / 100% 12px no-repeat,
@@ -1086,13 +986,6 @@
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
   }
 
-  .board.area-centre .cell.rack {
-    background:
-      repeating-linear-gradient(0deg, #d8b079 0 26px, #c49a62 26px 28px),
-      #d8b079;
-    background-size: auto;
-  }
-
   .board.area-centre .cell.table {
     background:
       radial-gradient(8px 8px at 30% 38%, #d05b4a, transparent 60%),
@@ -1103,53 +996,7 @@
     background-size: auto;
     box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
   }
-  .board.area-discovery { --centre-wall: #6f4630; }
-  .board.area-discovery .cell.ground,
-  .board.area-discovery .cell.building,
-  .board.area-discovery .cell.display {
-    background:
-      repeating-linear-gradient(0deg, #d8b079 0 26px, #c49a62 26px 28px),
-      #d8b079;
-    background-size: auto;
-    box-shadow: none;
-  }
-  .board.area-discovery .we-top { box-shadow: inset 0 14px 0 var(--centre-wall); }
-  .board.area-discovery .we-bottom { box-shadow: inset 0 -14px 0 var(--centre-wall); }
-  .board.area-discovery .we-left { box-shadow: inset 14px 0 0 var(--centre-wall); }
-  .board.area-discovery .we-right { box-shadow: inset -14px 0 0 var(--centre-wall); }
-  .board.area-discovery .we-tl { box-shadow: inset 0 14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
-  .board.area-discovery .we-tr { box-shadow: inset 0 14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
-  .board.area-discovery .we-bl { box-shadow: inset 0 -14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
-  .board.area-discovery .we-br { box-shadow: inset 0 -14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
-  .board.area-discovery .cell.door {
-    background: var(--ground-earth);
-    box-shadow: inset 0 0 0 2px rgba(194, 118, 47, 0.6);
-  }
-  .board.area-discovery .cell.door .glyph { display: none; }
 
-  .board.area-polar-discovery { --centre-wall: #4f6173; }
-  .board.area-polar-discovery .cell.ground,
-  .board.area-polar-discovery .cell.building,
-  .board.area-polar-discovery .cell.display {
-    background:
-      repeating-linear-gradient(0deg, #dce8f1 0 26px, #c7d7e4 26px 28px),
-      #dce8f1;
-    background-size: auto;
-    box-shadow: none;
-  }
-  .board.area-polar-discovery .we-top { box-shadow: inset 0 14px 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-bottom { box-shadow: inset 0 -14px 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-left { box-shadow: inset 14px 0 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-right { box-shadow: inset -14px 0 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-tl { box-shadow: inset 0 14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-tr { box-shadow: inset 0 14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-bl { box-shadow: inset 0 -14px 0 var(--centre-wall), inset 14px 0 0 var(--centre-wall); }
-  .board.area-polar-discovery .we-br { box-shadow: inset 0 -14px 0 var(--centre-wall), inset -14px 0 0 var(--centre-wall); }
-  .board.area-polar-discovery .cell.door {
-    background: var(--ground-earth);
-    box-shadow: inset 0 0 0 2px rgba(79, 97, 115, 0.6);
-  }
-  .board.area-polar-discovery .cell.door .glyph { display: none; }
   .cell.connector {
     background: var(--ground-earth);
     box-shadow: inset 0 0 0 2px rgba(194, 118, 47, 0.6);
@@ -1168,22 +1015,8 @@
   }
   .critter { z-index: 1; }
   .critter.smooth { transition: transform var(--cw, 600ms) linear; }
-  .keeper-sprite {
-    z-index: 2;
-    align-items: end;
-    pointer-events: auto;
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-  }
-  .keeper-sprite:focus { outline: none; }
-  .keeper-sprite:focus-visible {
-    outline: none;
-    border-radius: 8px;
-    box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--zoo-accent-deep);
-  }
 
+  .keeper-sprite,
   .patron-sprite {
     z-index: 2;
     align-items: end;
@@ -1193,7 +1026,9 @@
     padding: 0;
     cursor: pointer;
   }
+  .keeper-sprite:focus,
   .patron-sprite:focus { outline: none; }
+  .keeper-sprite:focus-visible,
   .patron-sprite:focus-visible {
     outline: none;
     border-radius: 8px;
