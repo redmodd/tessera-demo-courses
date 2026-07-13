@@ -1,0 +1,141 @@
+:root {
+  --tessera-bg: #e8ddc7;
+  --tessera-text: #3a3322;
+  /* The default #6b7280 is only 3.59:1 on our sand bg; this warm gray passes AA (4.9:1). */
+  --tessera-text-light: #5e5648;
+
+  --zoo-ink: #3a3322;
+  --zoo-bark: #5a4634;
+  --zoo-bark-text: #f3ead7;
+  --zoo-accent: #c2762f; /* UI only, never body text */
+  --zoo-accent-deep: #985c20; /* 5.1:1 on white, for button fills */
+  --zoo-ground: #cdbb91;
+  --zoo-grass: #9cae7a;
+  --zoo-hedge: #6f8f5a;
+  --zoo-water: #6ba8c9;
+  --zoo-dialog: #fffaf0;
+}
+
+/* Shared base for every game modal; each component's scoped styles add only its deltas. */
+.zoo-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: calc(100vw - 2rem);
+  height: fit-content;
+  border: 3px solid var(--zoo-bark);
+  border-radius: 14px;
+  background: var(--zoo-dialog);
+  color: var(--zoo-ink);
+  box-shadow: 0 16px 40px rgba(58, 51, 34, 0.35);
+}
+.zoo-modal::backdrop {
+  background: rgba(58, 51, 34, 0.55);
+}
+/* Modals are focused programmatically on open; buttons inside keep their focus rings. */
+.zoo-modal:focus {
+  outline: none;
+}
+
+/* DOM-last in each dialog, so it never steals initial focus from the first action button. */
+.zoo-modal-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  border: 2px solid var(--zoo-bark);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--zoo-ink);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+.zoo-modal-close:hover {
+  filter: brightness(0.97);
+}
+.zoo-modal-close:focus-visible {
+  outline: 3px solid var(--zoo-accent);
+  outline-offset: 2px;
+}
+
+/* Quiz answer buttons and the primary action button, shared by every overlay. Components
+   add only their deltas (wider padding, a top margin), which win on scoped specificity. */
+.choice,
+.continue {
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--zoo-bark);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--zoo-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.continue {
+  background: var(--zoo-accent-deep);
+  color: #fff;
+  border-color: transparent;
+}
+.choice.picked {
+  background: var(--zoo-ground);
+}
+.choice:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.choice:hover:not(:disabled),
+.continue:hover {
+  filter: brightness(0.97);
+}
+.choice:focus-visible,
+.continue:focus-visible {
+  outline: 3px solid var(--zoo-accent);
+  outline-offset: 2px;
+}
+
+/* Per-area ground theming; the base .board values are the fallback for an unthemed map. */
+.board {
+  --ground-field: #9cae7a;
+  --tall-grass: #7e9a5c;
+  --ground-earth: #cdbb91;
+  --pen-floor: #94a35d;
+  --path: #cdbb91;
+  --mottle-hi: rgba(255, 255, 255, 0.07);
+  --mottle-lo: rgba(44, 62, 26, 0.09);
+  --building-wall: #cdbfa0;
+  --desk-fill: #a9763f;
+  --shelf-fill: #7f9c6a;
+}
+.board.area-plaza {
+  --ground-field: #a6b683;
+  --tall-grass: #88a064;
+  --ground-earth: #c2c1b2;
+}
+.board.area-savanna {
+  --ground-field: #cabf78;
+  --tall-grass: #b3a850;
+  --ground-earth: #bb9d5c;
+  --path: #c4a45e;
+  --mottle-hi: rgba(255, 252, 235, 0.09);
+  --mottle-lo: rgba(120, 96, 40, 0.1);
+}
+.board.area-centre {
+  --ground-field: #d8c7a6;
+  --tall-grass: #d8c7a6;
+  --ground-earth: #b08a55;
+  --path: #d8c7a6;
+}
+.board.area-polar {
+  --ground-field: #e4ebf1;
+  --tall-grass: #c0d3e4;
+  --ground-earth: #c9d3dc;
+  --pen-floor: #d3dee7;
+  --path: #ccd7df;
+  --mottle-hi: rgba(255, 255, 255, 0.4);
+  --mottle-lo: rgba(96, 128, 158, 0.1);
+  --zoo-hedge: #d2dee9; /* deeper than the open field, so the treeline still reads as a wall */
+  --zoo-water: #a7c8e0;
+  --building-wall: #d2dce4;
+}
