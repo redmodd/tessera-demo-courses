@@ -17,11 +17,11 @@ exercise most of the framework, navigation modes, completion modes, export targe
 and quiz shells, custom question widgets, persistence, theming, and accessibility.
 More demos will be added over time.
 
-- **`road-sign-demo`** — a timed road-sign recognition game. Custom `layout.svelte`
+- **`road-sign-demo`**: a timed road-sign recognition game. Custom `layout.svelte`
   and `quiz.svelte`, quiz-mode completion.
-- **`solar-system-demo`** — a polished interactive article on the planets. Custom
+- **`solar-system-demo`**: a interactive modules on the planets in our solar system. Custom
   presentation components, NASA imagery, manual completion.
-- **`zoo-quest`** — a tile-based overworld you walk around to fill a "Zoodex".
+- **`zoo-quest`**: a tile-based overworld you walk around to fill a "Zoodex" (inspired by Pokémon games).
   Game engine and procedural SVG art under `lib/`, persistence, manual completion.
 
 ## Running a course
