@@ -17,29 +17,12 @@ exercise most of the framework, navigation modes, completion modes, export targe
 and quiz shells, custom question widgets, persistence, theming, and accessibility.
 More demos will be added over time.
 
-### `courses/road-sign-demo`: "Road Sign Match"
-
-A fast, timed road-sign recognition **game**. It leans on Tessera's extension points heavily:
-
-- Custom `layout.svelte` and `quiz.svelte` (replaces the default chrome and quiz UI)
-- Custom components — countdown ring, confetti, leaderboard, sound effects, sign cards
-- MUTCD road-sign SVGs and a sound-effect library under `assets/`
-- **Quiz-mode completion** (`completion.mode: "quiz"`), free navigation
-
-### `courses/solar-system-demo`: "Solar System Explorer"
-
-A rich, content-driven tour of the planets, closer to a polished interactive article:
-
-- A library of custom presentation components under `lib/` (chaptered histories,
-  reveal-on-scroll, comparison diagrams, a starfield, modals, a cosmic challenge)
-- NASA imagery per planet under `assets/`
-- **Manual completion** (`completion.mode: "manual"`), custom branding and theming
-
-## The shared design system
-
-`shared/` is a workspace-wide design system (`Button.svelte`, `tokens.css`) that any
-course can import as `$shared`. It is bundled into each course's export at build
-time, so it ships in every package with no extra wiring.
+- **`road-sign-demo`** — a timed road-sign recognition game. Custom `layout.svelte`
+  and `quiz.svelte`, quiz-mode completion.
+- **`solar-system-demo`** — a polished interactive article on the planets. Custom
+  presentation components, NASA imagery, manual completion.
+- **`zoo-quest`** — a tile-based overworld you walk around to fill a "Zoodex".
+  Game engine and procedural SVG art under `lib/`, persistence, manual completion.
 
 ## Running a course
 
@@ -52,6 +35,7 @@ pnpm install                      # first time only
 
 pnpm dev road-sign-demo           # dev server at http://localhost:5173
 pnpm dev solar-system-demo
+pnpm dev zoo-quest
 
 pnpm validate <course>            # fast structural + static a11y checks (no build)
 pnpm check <course>               # validate, then the runtime axe accessibility audit
@@ -76,7 +60,8 @@ tessera-demo-courses/
 ├── shared/                   # design system shared across courses (imported as $shared)
 ├── courses/
 │   ├── road-sign-demo/       # custom layout, quiz, components, sfx
-│   └── solar-system-demo/    # manual completion, custom lib/
+│   ├── solar-system-demo/    # manual completion, custom lib/
+│   └── zoo-quest/            # tile-based overworld game, persistence, custom engine
 ├── CLAUDE.md / AGENTS.md     # pointers to the framework's authoring guide
 └── README.md
 ```
