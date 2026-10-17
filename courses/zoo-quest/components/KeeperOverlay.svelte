@@ -33,6 +33,7 @@
       reset: () => {
         picks[i] = null;
       },
+      restore: () => {}, // each open re-rolls, so a saved answer isn't shown again
     }),
   );
 

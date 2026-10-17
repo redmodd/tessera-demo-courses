@@ -38,6 +38,7 @@
           reset: () => {
             picks[i] = null;
           },
+          restore: () => {}, // a fresh run starts blank, so a saved answer isn't shown again
         }),
       );
 
