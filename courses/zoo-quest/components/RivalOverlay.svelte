@@ -27,7 +27,7 @@
     ? []
     : questions.map((q, i) =>
         useQuestion({
-          id: `rival-${patron.id}-q${i + 1}`,
+          id: `rival_${patron.id.replaceAll('-', '_')}_q${i + 1}`,
           graded: false,
           response: () => ({
             type: 'choice',
@@ -38,6 +38,7 @@
           reset: () => {
             picks[i] = null;
           },
+          restore: () => {}, // a fresh run starts blank, so a saved answer isn't shown again
         }),
       );
 
@@ -50,8 +51,9 @@
 
   function choose(i) {
     if (revealed) return; // locked — no retries
-    picks[qIndex] = i;
     const h = handles[qIndex];
+    if (h.submitted) h.retry(); // answered in a run that was closed before it finished
+    picks[qIndex] = i;
     h.setAnswer(i);
     h.submit(); // reports the interaction
     revealed = true;

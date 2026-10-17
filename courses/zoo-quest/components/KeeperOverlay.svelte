@@ -22,7 +22,7 @@
 
   const handles = questions.map((q, i) =>
     useQuestion({
-      id: `keeper-${animal.id}-q${q.n}`,
+      id: `keeper_${animal.id.replaceAll('-', '_')}_q${q.n}`,
       graded: false,
       response: () => ({
         type: 'choice',
@@ -33,16 +33,20 @@
       reset: () => {
         picks[i] = null;
       },
+      restore: () => {}, // each open re-rolls, so a saved answer isn't shown again
     }),
   );
 
   function choose(i) {
     if (feedback === 'correct') return; // locked while the "Next" prompt is showing
-    picks[qIndex] = i;
     const h = handles[qIndex];
+    // A question drawn again comes back submitted from an earlier open; one answered
+    // correctly then stays locked, so judge this pick here rather than from h.correct.
+    if (h.submitted) h.retry();
+    picks[qIndex] = i;
     h.setAnswer(i);
-    h.submit(); // reports the interaction + computes correctness
-    if (h.correct) {
+    h.submit(); // reports the interaction
+    if (i === questions[qIndex].correct) {
       feedback = 'correct';
       dlg.focus(); // move off the choice so the Next button becomes the Enter target
     } else {
