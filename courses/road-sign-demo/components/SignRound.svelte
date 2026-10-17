@@ -7,8 +7,9 @@
 
   let selected = $state(null);
 
+  // No `restore`: rounds are re-drawn on every load, so a saved answer would be judged against a different sign.
   const q = useQuestion({
-    id: untrack(() => `roadsign-round-${round.index}`),
+    id: untrack(() => `roadsign_round_${round.index}`),
     response: () => ({
       type: 'choice',
       response: selected ? [selected] : [],
