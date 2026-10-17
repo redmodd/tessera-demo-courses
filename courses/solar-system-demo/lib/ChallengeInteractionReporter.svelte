@@ -92,23 +92,31 @@
     const k = q.kind ?? 'mc';
     const slug = q.question
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 60);
-    const planet = q.planet ? `${q.planet}-` : '';
-    return `cosmic-${planet}${k}-${slug}`;
+      .replace(/[^a-z0-9]+/g, '_')
+      .slice(0, 60)
+      .replace(/^_+|_+$/g, '');
+    const planet = q.planet ? `${q.planet}_` : '';
+    return `cosmic_${planet}${k}_${slug}`;
   }
 
   // The reporter is mounted via `{#key index}` in the parent, so `question`
   // does not change for the lifetime of this instance. `useQuestion` also
   // pins its id at registration. `untrack` makes that intent explicit and
   // silences the prop-read-outside-closure warning.
+  // No `restore`: the challenge draws fresh questions and renders its own UI, so a
+  // saved answer has nothing to show.
   const qHook = useQuestion({
     id: untrack(() => stableId(question)),
     response: () => buildInteraction(question, getAnswer()),
   });
 
+  // A question drawn again comes back submitted from the earlier play. Retry it so
+  // this answer is reported; one already answered correctly stays locked.
   $effect(() => {
-    if (submitNow && !qHook.submitted) qHook.submit();
+    if (!submitNow) return;
+    untrack(() => {
+      if (qHook.submitted && qHook.canRetry) qHook.retry();
+      if (!qHook.submitted) qHook.submit();
+    });
   });
 </script>
