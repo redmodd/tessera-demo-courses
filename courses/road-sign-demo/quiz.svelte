@@ -10,7 +10,7 @@
   let { children } = $props();
 
   let host = $state(null);
-  const quiz = useQuiz({ element: () => host });
+  const quiz = useQuiz();
   const nav = useNavigation();
   const course = useCourse();
   const leaderboardStore = usePersistence('roadsign-leaderboard');
@@ -38,6 +38,7 @@
   const currentQuestion = $derived(quiz.questions[currentIndex]);
   const correctCount = $derived(quiz.questions.reduce((s, q) => s + (q.correct ? 1 : 0), 0));
   const passed = $derived(quiz.score >= quiz.passingScore);
+  const moduleComplete = $derived(quiz.bestScore >= quiz.passingScore);
 
   let entries = $state(leaderboardStore.get() ?? []);
   let attemptWritten = false;
@@ -267,7 +268,7 @@
     <div class="sr-only" aria-live="polite" aria-atomic="true">{timeAnnouncement}</div>
   {:else if quiz.state === 'submitted'}
     <div class="results" class:results-passed={passed} class:results-failed={!passed}>
-      <p class="results-eyebrow">{passed ? 'Module complete' : 'Try again'}</p>
+      <p class="results-eyebrow" class:complete={moduleComplete}>{moduleComplete ? 'Module complete' : 'Try again'}</p>
       <h2 class="results-title">{passed ? 'You passed!' : 'Not quite. Give it another go.'}</h2>
       <div class="score-row">
         <div class="score-block">
@@ -429,7 +430,7 @@
     font-weight: 700;
     color: var(--rs-warning-amber-deep);
   }
-  .results-passed .results-eyebrow { color: var(--rs-guide-green); }
+  .results-eyebrow.complete { color: var(--rs-guide-green); }
   .results-title {
     margin: 0 0 1.5rem;
     font-size: clamp(2rem, 5vw, 2.75rem);
