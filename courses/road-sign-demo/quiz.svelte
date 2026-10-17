@@ -1,18 +1,18 @@
 <script>
   import { onDestroy, tick } from 'svelte';
-  import { useQuiz, useNavigation, usePersistence } from 'tessera-learn';
+  import { useQuiz, useNavigation, usePersistence, useCourse } from 'tessera-learn';
   import { game } from './components/game-state.svelte.js';
   import CountdownRing from './components/CountdownRing.svelte';
   import Leaderboard from './components/Leaderboard.svelte';
   import Confetti from './components/Confetti.svelte';
   import { sfx } from './components/sfx.js';
-  import courseConfig from './course.config.js';
 
   let { children } = $props();
 
   let host = $state(null);
-  const quiz = useQuiz({ element: () => host });
+  const quiz = useQuiz();
   const nav = useNavigation();
+  const course = useCourse();
   const leaderboardStore = usePersistence('roadsign-leaderboard');
 
   const DWELL_MS = 1200;
@@ -38,6 +38,7 @@
   const currentQuestion = $derived(quiz.questions[currentIndex]);
   const correctCount = $derived(quiz.questions.reduce((s, q) => s + (q.correct ? 1 : 0), 0));
   const passed = $derived(quiz.score >= quiz.passingScore);
+  const moduleComplete = $derived(quiz.bestScore >= quiz.passingScore);
 
   let entries = $state(leaderboardStore.get() ?? []);
   let attemptWritten = false;
@@ -45,6 +46,7 @@
   let flashKind = $state(null);
   let timeAnnouncement = $state('');
   let announcedMilestones = new Set();
+  let confirmExit = $state();
 
   // ---------- Timer loop ----------
   $effect(() => {
@@ -183,8 +185,9 @@
   }
 
   // ---------- Leaderboard write on submit ----------
+  // A result restored from saved progress was already written when it was played.
   $effect(() => {
-    if (quiz.state === 'submitted' && !attemptWritten) {
+    if (quiz.state === 'submitted' && !attemptWritten && !quiz.restored) {
       attemptWritten = true;
       const entry = {
         attempt: entries.reduce((m, e) => Math.max(m, e.attempt ?? 0), 0) + 1,
@@ -219,12 +222,6 @@
     if (dwellTimer) clearTimeout(dwellTimer);
     if (rafId) cancelAnimationFrame(rafId);
     nav.goTo('splash');
-  }
-
-  const showExit = courseConfig.export?.standard !== 'web';
-
-  function exitCourse() {
-    window.close();
   }
 </script>
 
@@ -271,17 +268,27 @@
     <div class="sr-only" aria-live="polite" aria-atomic="true">{timeAnnouncement}</div>
   {:else if quiz.state === 'submitted'}
     <div class="results" class:results-passed={passed} class:results-failed={!passed}>
-      <p class="results-eyebrow">{passed ? 'Module complete' : 'Try again'}</p>
+      <p class="results-eyebrow" class:complete={moduleComplete}>{moduleComplete ? 'Module complete' : 'Try again'}</p>
       <h2 class="results-title">{passed ? 'You passed!' : 'Not quite. Give it another go.'}</h2>
       <div class="score-row">
         <div class="score-block">
           <span class="score-num">{quiz.score}%</span>
-          <span class="score-cap">{correctCount} of {totalQuestions} correct</span>
+          {#if !quiz.restored}
+            <span class="score-cap">{correctCount} of {totalQuestions} correct</span>
+          {/if}
         </div>
-        <div class="score-block">
-          <span class="score-num">{totalPoints.toLocaleString()}</span>
-          <span class="score-cap">points · best streak {bestStreak}</span>
-        </div>
+        {#if !quiz.restored}
+          <div class="score-block">
+            <span class="score-num">{totalPoints.toLocaleString()}</span>
+            <span class="score-cap">points · best streak {bestStreak}</span>
+          </div>
+        {/if}
+        {#if quiz.bestScore > quiz.score}
+          <div class="score-block">
+            <span class="score-num">{quiz.bestScore}%</span>
+            <span class="score-cap">best attempt</span>
+          </div>
+        {/if}
       </div>
 
       <Leaderboard {entries} />
@@ -289,10 +296,21 @@
       <div class="results-actions">
         <button class="rs-btn rs-btn--start" type="button" onclick={handleRetry}>Play again</button>
         <button class="rs-btn rs-btn--neutral" type="button" onclick={quitToStart}>Back to start</button>
-        {#if showExit}
-          <button class="rs-btn rs-btn--neutral" type="button" onclick={exitCourse}>Exit course</button>
+        {#if course.canExit}
+          <button class="rs-btn rs-btn--neutral" type="button" onclick={() => confirmExit.showModal()}>Exit course</button>
         {/if}
       </div>
+
+      {#if course.canExit}
+        <dialog bind:this={confirmExit} class="exit-dialog" aria-labelledby="exit-title">
+          <h2 id="exit-title">Exit the course?</h2>
+          <p>Your progress will be saved.</p>
+          <div class="results-actions">
+            <button class="rs-btn rs-btn--neutral" type="button" onclick={() => confirmExit.close()}>Cancel</button>
+            <button class="rs-btn rs-btn--start" type="button" onclick={() => course.exit()}>Exit course</button>
+          </div>
+        </dialog>
+      {/if}
 
       {#if passed}
         <Confetti trigger={confettiToken + 1000} burst />
@@ -412,7 +430,7 @@
     font-weight: 700;
     color: var(--rs-warning-amber-deep);
   }
-  .results-passed .results-eyebrow { color: var(--rs-guide-green); }
+  .results-eyebrow.complete { color: var(--rs-guide-green); }
   .results-title {
     margin: 0 0 1.5rem;
     font-size: clamp(2rem, 5vw, 2.75rem);
@@ -430,6 +448,16 @@
   .score-num { font-size: 2.5rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
   .score-cap { font-size: 0.85rem; color: var(--rs-text-muted); }
   .results-actions { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+  .exit-dialog {
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    color: var(--rs-text);
+  }
+  .exit-dialog h2 { margin: 0 0 0.5rem; font-size: 1.25rem; }
+  .exit-dialog p { margin: 0; color: var(--rs-text-muted); }
+  .exit-dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
 
   @media (prefers-reduced-motion: reduce) {
     .flash-correct, .flash-wrong, .points-fly { animation: none; }
