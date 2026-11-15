@@ -10,11 +10,12 @@
   // No `restore`: rounds are re-drawn on every load, so a saved answer would be judged against a different sign.
   const q = useQuestion({
     id: untrack(() => `roadsign_round_${round.index}`),
+    text: untrack(() => (round.prompt.kind === 'sign' ? 'What is this sign?' : round.prompt.text)),
     response: () => ({
       type: 'choice',
       response: selected ? [selected] : [],
       correct: [round.target.id],
-      options: round.cards.map((c) => c.id),
+      options: round.cards.map((c) => ({ id: c.id, text: c.name })),
     }),
     reset: () => {
       selected = null;
