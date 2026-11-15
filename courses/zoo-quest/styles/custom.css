@@ -3,3 +3,8 @@
  * default theme. For deeper customisation, see the "Theming" section in
  * AGENTS.md.
  */
+
+:root {
+  --tessera-primary: #985c20; /* deep terracotta: 5.4:1 on white */
+  --tessera-font-family: Inter, system-ui, sans-serif;
+}
