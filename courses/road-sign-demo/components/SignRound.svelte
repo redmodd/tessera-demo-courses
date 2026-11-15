@@ -10,11 +10,17 @@
   // No `restore`: rounds are re-drawn on every load, so a saved answer would be judged against a different sign.
   const q = useQuestion({
     id: untrack(() => `roadsign_round_${round.index}`),
+    // A getter, not a value: game.reroll() swaps `round` under this instance, and tessera reads text at submit.
+    get text() {
+      return round.prompt.text;
+    },
     response: () => ({
       type: 'choice',
       response: selected ? [selected] : [],
       correct: [round.target.id],
-      options: round.cards.map((c) => c.id),
+      options: round.cards
+        .toSorted((a, b) => a.id.localeCompare(b.id))
+        .map((c) => ({ id: c.id, text: c.name })),
     }),
     reset: () => {
       selected = null;
@@ -47,7 +53,7 @@
         <div class="prompt-sign">
           <SignCard symbol={round.prompt.sign.id} size="lg" decorative />
         </div>
-        <p class="prompt-caption">What is this sign?</p>
+        <p class="prompt-caption">{round.prompt.text}</p>
       {:else}
         <p class="prompt-text">{round.prompt.text}</p>
       {/if}

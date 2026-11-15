@@ -7,11 +7,11 @@
   --rs-regulatory-red: #dc2626;
   --rs-warning-amber: #f59e0b;
   --rs-warning-amber-deep: #b45309;
-  --rs-guide-green: #16a34a;
+  --rs-guide-green: #15803d;
   --rs-card-bg: #ffffff;
   --rs-card-border: rgba(0, 0, 0, 0.1);
   --rs-card-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
-  --rs-correct: #16a34a;
+  --rs-correct: #15803d;
   --rs-correct-bg: #dcfce7;
   --rs-wrong: #dc2626;
   --rs-wrong-bg: #fee2e2;
@@ -66,7 +66,7 @@
 }
 .rs-btn--start {
   background: var(--rs-guide-green);
-  box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
+  box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--rs-guide-green) 40%, transparent);
 }
 .rs-btn--neutral {
   background: #ffffff;

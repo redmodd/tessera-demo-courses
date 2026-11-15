@@ -406,7 +406,7 @@
     transform: translateX(-50%);
     font-size: 1.5rem;
     font-weight: 700;
-    color: #16a34a;
+    color: var(--rs-correct);
     pointer-events: none;
     animation: fly-up 1100ms ease-out forwards;
   }

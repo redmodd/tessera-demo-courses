@@ -300,7 +300,7 @@ export function generateRounds({ count = 15, attemptOffset = 0, rand = Math.rand
     if (mode === 'name-to-sign') {
       prompt = { kind: 'text', text: target.name };
     } else if (mode === 'sign-to-name') {
-      prompt = { kind: 'sign', sign: target };
+      prompt = { kind: 'sign', sign: target, text: 'What is this sign?' };
     } else if (mode === 'scenario-to-sign') {
       prompt = { kind: 'text', text: target.scenario };
     } else {
