@@ -94,7 +94,7 @@
     color: #050a1c;
     font-weight: 600;
   }
-  .primary:hover { background: var(--tessera-primary-light); }
+  .primary:hover { background: var(--solar-primary-light); }
 
   .ghost {
     background: transparent;

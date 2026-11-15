@@ -1,7 +1,6 @@
 :root {
   --tessera-primary: #7aa2ff;
-  --tessera-primary-light: #a8c0ff;
-  --tessera-primary-dark: #4d6fc0;
+  --solar-primary-light: #a8c0ff;
   --tessera-text: #e8edf7;
   --tessera-text-light: #98a3b8;
   --tessera-bg: #05060e;
@@ -41,7 +40,7 @@ body {
 }
 
 a {
-  color: var(--tessera-primary-light);
+  color: var(--solar-primary-light);
 }
 
 button {
