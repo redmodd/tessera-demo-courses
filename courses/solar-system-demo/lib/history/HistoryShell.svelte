@@ -173,7 +173,6 @@
             class:passed={i <= activeDateIndex}
             class:current={i === activeDateIndex}
             class:locked
-            disabled={locked}
             aria-disabled={locked}
             onclick={() => !locked && jumpTo(d.anchor)}
           >
