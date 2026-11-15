@@ -152,6 +152,7 @@
     class="system"
     class:dimmed={selected !== null}
     style="--pan-x: {panX}px; --pan-y: {panY}px;"
+    role="group"
     aria-label="Interactive solar system"
   >
     <button
@@ -644,7 +645,7 @@
   }
   .subtitle {
     font-size: 0.9rem;
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
     font-style: italic;
     margin: 0 0 1.25rem;
     line-height: 1.5;
@@ -692,7 +693,7 @@
     transition: background 0.2s, transform 0.2s;
   }
   .read-more:hover {
-    background: var(--tessera-primary-light);
+    background: var(--solar-primary-light);
     transform: translateY(-2px);
   }
   .read-more .arrow { transition: transform 0.2s; }

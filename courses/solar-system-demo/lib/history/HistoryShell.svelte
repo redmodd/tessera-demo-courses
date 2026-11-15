@@ -566,6 +566,6 @@
     font-size: 0.9rem;
     color: var(--tessera-text-light);
   }
-  .cta strong { color: var(--tessera-primary-light); }
+  .cta strong { color: var(--solar-primary-light); }
   .cta .rocket { margin-right: 0.4rem; }
 </style>

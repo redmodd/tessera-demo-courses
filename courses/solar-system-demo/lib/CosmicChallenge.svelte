@@ -572,7 +572,7 @@
     justify-content: center;
     border-radius: 50%;
     background: rgba(122,162,255,0.15);
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
     font-weight: 600;
     font-size: 0.85rem;
     flex-shrink: 0;
@@ -604,7 +604,7 @@
     justify-content: center;
     border-radius: 50%;
     background: rgba(122,162,255,0.15);
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
     font-weight: 600;
     font-size: 0.85rem;
     flex-shrink: 0;
@@ -697,7 +697,7 @@
     margin-bottom: 1rem;
     font-size: 0.88rem;
   }
-  .match-key strong { display: block; margin-bottom: 0.25rem; color: var(--tessera-primary-light); }
+  .match-key strong { display: block; margin-bottom: 0.25rem; color: var(--solar-primary-light); }
   .match-key ul { margin: 0; padding-left: 1.1rem; }
 
   .slider-wrap {
@@ -714,7 +714,7 @@
   .slider-value {
     font-size: 1.6rem;
     font-weight: 700;
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
   }
   .slider-track-wrap {
     position: relative;
@@ -760,7 +760,7 @@
     font-size: 0.9rem;
     color: var(--tessera-text);
   }
-  .slider-truth strong { color: var(--tessera-primary-light); }
+  .slider-truth strong { color: var(--solar-primary-light); }
   .slider-tol { color: var(--tessera-text-light); margin-left: 0.3rem; }
 
   .hotspot-wrap { margin-bottom: 1.25rem; }
@@ -824,14 +824,14 @@
     font-size: 0.95rem;
     line-height: 1.5;
   }
-  .reveal strong { display: block; margin-bottom: 0.25rem; color: var(--tessera-primary-light); }
+  .reveal strong { display: block; margin-bottom: 0.25rem; color: var(--solar-primary-light); }
   .reveal-link {
     display: inline-block;
     margin-top: 0.6rem;
     background: none;
     border: none;
     padding: 0;
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
     font: inherit;
     font-size: 0.88rem;
     cursor: pointer;
@@ -876,7 +876,7 @@
     font-weight: 600;
     width: 100%;
   }
-  .next:hover:not(:disabled), .primary:hover { background: var(--tessera-primary-light); }
+  .next:hover:not(:disabled), .primary:hover { background: var(--solar-primary-light); }
   .next:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .ghost {
@@ -894,7 +894,7 @@
   .result-score {
     font-size: 3rem;
     font-weight: 700;
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
     margin-bottom: 0.25rem;
   }
   .result-title {

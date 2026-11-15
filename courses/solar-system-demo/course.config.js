@@ -7,8 +7,4 @@ export default {
   completion: { mode: "manual" },
   scoring: { passingScore: 0 },
   export: { standard: "web" },
-  branding: {
-    primaryColor: "#3b5bdb",
-    fontFamily: "'Inter', system-ui, sans-serif",
-  },
 };

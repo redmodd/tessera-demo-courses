@@ -105,7 +105,7 @@
   }
 
   em {
-    color: var(--tessera-primary-light);
+    color: var(--solar-primary-light);
     font-style: normal;
     background: linear-gradient(transparent 65%, rgba(122,162,255,0.18) 65%);
     padding: 0 0.15em;
@@ -156,7 +156,7 @@
     transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   }
   .continue:hover {
-    background: var(--tessera-primary-light);
+    background: var(--solar-primary-light);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(122,162,255,0.35);
   }
