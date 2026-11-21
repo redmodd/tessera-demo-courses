@@ -10,14 +10,14 @@ importers:
     dependencies:
       tessera-learn:
         specifier: 0.14.0
-        version: 0.14.0(@axe-core/playwright@4.14.0(playwright-core@1.65.0))(playwright@1.65.0)(svelte@5.57.3)
+        version: 0.14.0(@axe-core/playwright@4.14.0(playwright-core@1.65.1))(playwright@1.65.1)(svelte@5.57.3)
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.14.0
-        version: 4.14.0(playwright-core@1.65.0)
+        version: 4.14.0(playwright-core@1.65.1)
       playwright:
-        specifier: ^1.65.0
-        version: 1.65.0
+        specifier: ^1.65.1
+        version: 1.65.1
       svelte:
         specifier: ^5.57.3
         version: 5.57.3
@@ -525,13 +525,13 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  playwright-core@1.65.0:
-    resolution: {integrity: sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA==}
+  playwright-core@1.65.1:
+    resolution: {integrity: sha512-hqPpz7blSMPxWVdoeE1yiBSzXsKiVOd2k+kjCvmUywD2GPO2Dd9HfcWnq9NN0GHbNZDFgZ9JfBFr+X5/BLo0qw==}
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.65.0:
-    resolution: {integrity: sha512-F3AMWcR44qMBt4kq+6Kb6mX7bjGXshktKFOPULd7reED6ZJWevjbNRqysP7q+AATE9kdPEZBibex1BYsvpVoeA==}
+  playwright@1.65.1:
+    resolution: {integrity: sha512-vJ1FuoOrNwOKHUIVEvSt3jT1L+wjjDpwhwIstKtfvTh8XIG4FG4bIFuvNdMxi81LGfAhUgUZleVFaOLY4RIUUw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -735,10 +735,10 @@ packages:
 
 snapshots:
 
-  '@axe-core/playwright@4.14.0(playwright-core@1.65.0)':
+  '@axe-core/playwright@4.14.0(playwright-core@1.65.1)':
     dependencies:
       axe-core: 4.14.0
-      playwright-core: 1.65.0
+      playwright-core: 1.65.1
 
   '@emnapi/core@2.0.0-beta.2':
     dependencies:
@@ -1107,11 +1107,11 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  playwright-core@1.65.0: {}
+  playwright-core@1.65.1: {}
 
-  playwright@1.65.0:
+  playwright@1.65.1:
     dependencies:
-      playwright-core: 1.65.0
+      playwright-core: 1.65.1
 
   postcss@8.5.32:
     dependencies:
@@ -1230,7 +1230,7 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  tessera-learn@0.14.0(@axe-core/playwright@4.14.0(playwright-core@1.65.0))(playwright@1.65.0)(svelte@5.57.3):
+  tessera-learn@0.14.0(@axe-core/playwright@4.14.0(playwright-core@1.65.1))(playwright@1.65.1)(svelte@5.57.3):
     dependencies:
       '@sveltejs/acorn-typescript': 1.0.13(acorn@8.19.0)
       '@sveltejs/vite-plugin-svelte': 7.3.1(svelte@5.57.3)(vite@8.3.8)
@@ -1240,8 +1240,8 @@ snapshots:
       svelte: 5.57.3
       vite: 8.3.8
     optionalDependencies:
-      '@axe-core/playwright': 4.14.0(playwright-core@1.65.0)
-      playwright: 1.65.0
+      '@axe-core/playwright': 4.14.0(playwright-core@1.65.1)
+      playwright: 1.65.1
     transitivePeerDependencies:
       - '@types/node'
       - '@vitejs/devtools'
